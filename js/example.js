@@ -85,39 +85,57 @@
     let score = 0;
     let lastPick;
     let selected = 0;
+    let turns = 40;
+    let gameOver = false;
     let tokenTemplate = {
         colors: ["red", "blue", "green", "black"],
         shapes: ["square", "diamond", "circle"],
         quantity: [1, 2, 3, 4], // not used
         fill: ["solid", "empty"]
     }
+    const scoringRules = createScoringRules();
 
-    const scoringRules = {
-        colorRules: {
-            "red": randomInt(-2, 5),
-            "blue": randomInt(-2, 5),
-            "green": randomInt(-2, 5),
-            "black": randomInt(-2, 5)
-        }, 
+    function createScoringRules() {
+        let tempArray = [-1, 1, 2, 3]
+        shuffleArray(tempArray);
+        let colorRules = {
+            "red": tempArray[0],
+            "blue": tempArray[1],
+            "green": tempArray[2],
+            "black": tempArray[3]
+        }
 
-        shapeRules: {
-            "square": randomInt(-3, 8),
-            "diamond": randomInt(-3, 8),
-            "circle": randomInt(-3, 8),
-        },
+        tempArray = [-1, 2, 4];
+        shuffleArray(tempArray);
+        let shapeRules = {
+            "square": tempArray[0],
+            "diamond": tempArray[1],
+            "circle": tempArray[2],
+        }
 
-        quantityRules: [
-            randomInt(-2,5),
-            randomInt(-2,5),
-            randomInt(-2,5),
-            randomInt(-2,5)
-        ],
+        tempArray = [-1, 1, 2, 3];
+        shuffleArray(tempArray);
+        let quantityRules = tempArray;
 
-        fillRules: {
-            solid: randomInt(-4,12),
-            empty: randomInt(-4,12)
+        tempArray = [-1, 2];
+        console.log("current value of quantityRules: " + quantityRules);
+        shuffleArray(tempArray);
+        let fillRules = {
+            solid: tempArray[0],
+            empty: tempArray[1]
+        }
+
+        return {
+            colorRules: colorRules,
+
+            shapeRules: shapeRules,
+
+            quantityRules: quantityRules,
+
+            fillRules: fillRules
         }
     }
+
 
 
     /////////////////////////////////////
@@ -126,7 +144,7 @@
 
     // returns the scoring function. 
     // this might be stupid but it should work
-    
+
 
     // Example helper function to do an arbitrary thing with the canvas
     /* function step(timestamp) {
@@ -155,7 +173,18 @@
         return Math.floor(Math.random() * (max - min + 1) + min);
     }
 
+    // stole this from stackoverflow. It should probably work
+    function shuffleArray(arr) {
+        for (let i = 0; i < arr.length; i++) {
+            let j = randomInt(0, i);
+            let temp = arr[i]
+            arr[i] = arr[j];
+            arr[j] = temp;
+        }
+    }
+
     function drawScene(tokens) {
+        ctx.clearRect(0, 0, 540, 960); // clear the frame
         // where to draw the ith card
         function posn(i) {
             return {
@@ -163,23 +192,44 @@
                 y: 200 + 160 * Math.floor(i / 5)
             }
         }
+        if (gameOver == false) {
+            ctx.save();
+            // halo around selected card
+            ctx.fillStyle = "blue";
+            if (selected == 15) { // halo is different for selected button
+                ctx.fillRect(195, 675, 130, 70);
+            } else {
+                ctx.fillRect(posn(selected).x - 5, posn(selected).y - 5, 90, 130);
+            }
 
-        ctx.save();
-        ctx.fillStyle = "blue";
-        ctx.fillRect(posn(selected).x - 5, posn(selected).y - 5, 90, 130); // halo around selected card
-        for (let i = 0; i < tokens.length; i++) {
-            drawToken(posn(i).x, posn(i).y, tokens[i], 1);
+            // draw the reset button
+            ctx.fillStyle = 'grey'
+            ctx.fillRect(200, 680, 120, 60)
+            ctx.font = '36px serif'
+            ctx.fillStyle = 'yellow'
+            ctx.fillText("Reroll", 205, 720)
+
+            for (let i = 0; i < tokens.length; i++) {
+                drawToken(posn(i).x, posn(i).y, tokens[i], 1);
+            }
+
+            // draw the text
+            ctx.restore();
+            ctx.font = '36px serif';
+            ctx.fillText("Score: " + score, 190, 880);
+            ctx.font = '24px serif'
+            ctx.fillText("Turns remaining: " + turns, 120, 920);
+            ctx.fillText
+            if (lastPick != null) {
+                ctx.fillText("+ " + lastPick.score + " points. Last pick", 100, 820);
+                drawToken(400, 770, lastPick.card, 0.5);
+            }
+        } else { // draw gameover screen
+            ctx.font = '48px serif'
+            ctx.fillText("Game Over", 120, 400);
+            ctx.fillText("Score: " + score, 120, 450);
+            console.log("drawing gameover screen");
         }
-
-        ctx.restore();
-        ctx.font = '36px serif';
-        ctx.fillText("Score: " + score, 190, 880);
-        if (lastPick != null) {
-            ctx.font = '24px serif';
-            ctx.fillText("+ " + lastPick.score + " points. Last pick", 100, 780);
-            drawToken(400, 730, lastPick.card, 0.5);
-        }
-
     }
 
     // draws a token with top left corner (x,y), and the given scale
@@ -243,17 +293,29 @@
     }
 
     function selectCard() {
-        lastPick = {
-            card: tokens[selected],
-            score: getScore(tokens[selected])
+        if (turns > 0) {
+            if (selected == 15) {
+                //selected = 0;
+                tokens = [];
+                for (let i = 0; i < 15; i++) {
+                    tokens.push(createToken());
+                }
+                turns--;
+            } else {
+                lastPick = {
+                    card: tokens[selected],
+                    score: getScore(tokens[selected])
+                }
+                score += lastPick.score;
+                tokens[selected] = createToken();
+                console.log("last pick: " + lastPick);
+                turns--;
+            }
         }
-        score += lastPick.score;
-        tokens[selected] = createToken();
-        console.log("last pick: " + lastPick);
     }
 
     function getScore(token) {
-        let value=0;
+        let value = 0;
 
         value += scoringRules.colorRules[token.color];
         value += scoringRules.shapeRules[token.shape];
@@ -267,13 +329,21 @@
     window.addEventListener("keydown", keyDownHandler);
 
     function keyDownHandler(key) {
-        let oldSelected = selected;
+        let oldSlected = selected;
+        if (turns == 0) {
+            gameOver = true;
+            console.log("game over");
+        }
         switch (key.keyCode) {
             case 37: // left
                 selected--;
                 break;
             case 38: // up
-                selected -= 5;
+                if (selected == 15) {
+                    selected = 12;
+                } else {
+                    selected -= 5;
+                }
                 break;
             case 39: // right
                 selected++;
@@ -285,17 +355,16 @@
                 selectCard();
                 break;
         }
-        if (selected > 14) {
-            selected = oldSelected;
+        if (selected > 15) {
+            selected = 15;
         } if (selected < 0) {
             selected = oldSelected;
         }
+
+        drawScene(tokens);
+
         // console.log("keydown event with keycode " + key.keyCode); 
         // console.log("selected = " + selected);
-
-        // redraw the scene
-        ctx.clearRect(0, 0, 540, 960);
-        drawScene(tokens);
     }
 
     /* function handleClick(input){
