@@ -82,6 +82,9 @@
     const margin = 10;
     let initialized = false;
     let tPrev = 0;
+    let score = 0;
+    let lastPick;
+    let selected = 0;
     let tokenTemplate = {
         colors: ["red", "blue", "green", "black"],
         shapes: ["square", "diamond", "circle"],
@@ -89,10 +92,41 @@
         fill: ["solid", "empty"]
     }
 
+    const scoringRules = {
+        colorRules: {
+            "red": randomInt(-2, 5),
+            "blue": randomInt(-2, 5),
+            "green": randomInt(-2, 5),
+            "black": randomInt(-2, 5)
+        }, 
+
+        shapeRules: {
+            "square": randomInt(-3, 8),
+            "diamond": randomInt(-3, 8),
+            "circle": randomInt(-3, 8),
+        },
+
+        quantityRules: [
+            randomInt(-2,5),
+            randomInt(-2,5),
+            randomInt(-2,5),
+            randomInt(-2,5)
+        ],
+
+        fillRules: {
+            solid: randomInt(-4,12),
+            empty: randomInt(-4,12)
+        }
+    }
+
 
     /////////////////////////////////////
     // Function definitions
     /////////////////////////////////////
+
+    // returns the scoring function. 
+    // this might be stupid but it should work
+    
 
     // Example helper function to do an arbitrary thing with the canvas
     /* function step(timestamp) {
@@ -126,77 +160,152 @@
         function posn(i) {
             return {
                 x: 20 + (100 * i % 500),
-                y: 160 + 160 * Math.floor(i / 5)
+                y: 200 + 160 * Math.floor(i / 5)
             }
         }
-        let x;
-        let y;
+
+        ctx.save();
+        ctx.fillStyle = "blue";
+        ctx.fillRect(posn(selected).x - 5, posn(selected).y - 5, 90, 130); // halo around selected card
         for (let i = 0; i < tokens.length; i++) {
-            // where do we draw this token?
-            x = posn(i).x;
-            y = posn(i).y;
-
-            // draw the card
-            ctx.fillStyle = "grey";
-            ctx.strokeStyle = "grey";
-            ctx.str
-            ctx.fillRect(x, y, 80, 120);
-
-
-            // x and y will change when drawing symbols on card
-            let oldX = x;
-            let oldY = y;
-            x += 10;
-            y += 30;
-
-            // start the path 
-            ctx.beginPath();
-            ctx.fillStyle = tokens[i].color;
-            ctx.strokeStyle = tokens[i].color;
-
-            // draw the symbols
-            for (let j = 1; j <= tokens[i].quantity; j++) {
-                ctx.beginPath();
-                switch (tokens[i].shape) {
-                    case "square":
-                        ctx.moveTo(x, y);
-                        ctx.lineTo(x + 25, y);
-                        ctx.lineTo(x + 25, y + 25);
-                        ctx.lineTo(x, y + 25);
-                        ctx.lineTo(x, y);
-                        break;
-                    case "circle":
-                        ctx.arc(x + 12.5, y + 12.5, 12.5, 0, 2 * Math.PI);
-                        break;
-                    case "diamond":
-                        ctx.moveTo(x, y);
-                        ctx.moveTo(x + 12.5, y);
-                        ctx.lineTo(x + 20, y + 12.5);
-                        ctx.lineTo(x + 12.5, y + 25);
-                        ctx.lineTo(x + 5, y + 12.5);
-                        ctx.lineTo(x + 12.5, y);
-                        break;
-                    case "triangle":
-                        break;
-                    default:
-                        console.log("Error: " + tokens[i].shape + " is not a valid shape");
-                }
-                if (tokens[i].fill == "solid") {
-                    ctx.fill();
-                }
-                ctx.stroke();
-
-                if (j % 2 == 1) {
-                    x += 30;
-                } else {
-                    y += 30;
-                    x -= 30;
-                }
-            }
+            drawToken(posn(i).x, posn(i).y, tokens[i], 1);
         }
+
+        ctx.restore();
+        ctx.font = '36px serif';
+        ctx.fillText("Score: " + score, 190, 880);
+        if (lastPick != null) {
+            ctx.font = '24px serif';
+            ctx.fillText("+ " + lastPick.score + " points. Last pick", 100, 780);
+            drawToken(400, 730, lastPick.card, 0.5);
+        }
+
     }
 
-    // window.addEventListener("mousedown");
+    // draws a token with top left corner (x,y), and the given scale
+    function drawToken(x, y, token, scale) {
+        // draw the card
+        ctx.save();
+        ctx.fillStyle = "grey";
+        ctx.strokeStyle = "grey";
+        ctx.fillRect(x, y, 80 * scale, 120 * scale);
+
+
+        // x and y will change when drawing symbols on card
+        x += 10 * scale;
+        y += 30 * scale;
+
+        // start the path 
+        ctx.beginPath();
+        ctx.fillStyle = token.color;
+        ctx.strokeStyle = token.color;
+
+        // draw the symbols
+        for (let j = 1; j <= token.quantity; j++) {
+            ctx.beginPath();
+            switch (token.shape) {
+                case "square":
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(x + 25 * scale, y);
+                    ctx.lineTo(x + 25 * scale, y + 25 * scale);
+                    ctx.lineTo(x, y + 25 * scale);
+                    ctx.lineTo(x, y);
+                    break;
+                case "circle":
+                    ctx.arc(x + 12.5 * scale, y + 12.5 * scale, 12.5 * scale, 0, 2 * Math.PI);
+                    break;
+                case "diamond":
+                    ctx.moveTo(x, y);
+                    ctx.moveTo(x + 12.5 * scale, y);
+                    ctx.lineTo(x + 20 * scale, y + 12.5 * scale);
+                    ctx.lineTo(x + 12.5 * scale, y + 25 * scale);
+                    ctx.lineTo(x + 5 * scale, y + 12.5 * scale);
+                    ctx.lineTo(x + 12.5 * scale, y);
+                    break;
+                case "triangle":
+                    break;
+                default:
+                    console.log("Error: " + token.shape + " is not a valid shape");
+            }
+            if (token.fill == "solid") {
+                ctx.fill();
+            }
+            ctx.stroke();
+
+            if (j % 2 == 1) {
+                x += 30 * scale;
+            } else {
+                y += 30 * scale;
+                x -= 30 * scale;
+            }
+        }
+        ctx.restore();
+    }
+
+    function selectCard() {
+        lastPick = {
+            card: tokens[selected],
+            score: getScore(tokens[selected])
+        }
+        score += lastPick.score;
+        tokens[selected] = createToken();
+        console.log("last pick: " + lastPick);
+    }
+
+    function getScore(token) {
+        let value=0;
+
+        value += scoringRules.colorRules[token.color];
+        value += scoringRules.shapeRules[token.shape];
+        value += scoringRules.quantityRules[token.quantity - 1]; //subtract 1 because arrays index from 0
+        value += scoringRules.fillRules[token.fill];
+
+        return value;
+    }
+
+
+    window.addEventListener("keydown", keyDownHandler);
+
+    function keyDownHandler(key) {
+        let oldSelected = selected;
+        switch (key.keyCode) {
+            case 37: // left
+                selected--;
+                break;
+            case 38: // up
+                selected -= 5;
+                break;
+            case 39: // right
+                selected++;
+                break;
+            case 40: // down
+                selected += 5;
+                break;
+            case 32:
+                selectCard();
+                break;
+        }
+        if (selected > 14) {
+            selected = oldSelected;
+        } if (selected < 0) {
+            selected = oldSelected;
+        }
+        // console.log("keydown event with keycode " + key.keyCode); 
+        // console.log("selected = " + selected);
+
+        // redraw the scene
+        ctx.clearRect(0, 0, 540, 960);
+        drawScene(tokens);
+    }
+
+    /* function handleClick(input){
+        let x = input.clientX;
+        let y = input.clientY;
+        ctx.fillRect(x,y,20,20);
+        console.log("logged mouse input at x=" + x + ", y=" + y);
+    }
+    
+    window.addEventListener("mousedown", handleClick); */
 
 
     /////////////////////////////////////
@@ -206,11 +315,17 @@
     // now this is epic
     initResizer();
     let tokens = [];
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 15; i++) {
         tokens.push(createToken());
     }
+    ctx.clearRect(0, 0, 540, 960);
     drawScene(tokens);
     console.log(tokens);
+    console.log("scoring Rules:");
+    console.log(scoringRules.colorRules);
+    console.log(scoringRules.fillRules);
+    console.log(scoringRules.shapeRules);
+    console.log(scoringRules.quantityRules);
 
 
     // Close and execute the IIFE here
