@@ -88,51 +88,21 @@
     let turns = 40;
     let gameOver = false;
     let tokenTemplate = {
-        colors: ["red", "blue", "green", "black"],
-        shapes: ["square", "diamond", "circle"],
-        quantity: [1, 2, 3, 4], // not used
-        fill: ["solid", "empty"]
+        shapes: ["square", "diamond", "circle", "triangle", "star", "bolt"],
     }
     const scoringRules = createScoringRules();
 
     function createScoringRules() {
-        let tempArray = [-1, 1, 2, 3]
+        let tempArray = [-1, 0, 1, 2, 3,5]
         shuffleArray(tempArray);
-        let colorRules = {
-            "red": tempArray[0],
-            "blue": tempArray[1],
-            "green": tempArray[2],
-            "black": tempArray[3]
-        }
-
-        tempArray = [-1, 2, 4];
-        shuffleArray(tempArray);
-        let shapeRules = {
-            "square": tempArray[0],
-            "diamond": tempArray[1],
-            "circle": tempArray[2],
-        }
-
-        tempArray = [-1, 1, 2, 3];
-        shuffleArray(tempArray);
-        let quantityRules = tempArray;
-
-        tempArray = [-1, 2];
-        console.log("current value of quantityRules: " + quantityRules);
-        shuffleArray(tempArray);
-        let fillRules = {
-            solid: tempArray[0],
-            empty: tempArray[1]
-        }
 
         return {
-            colorRules: colorRules,
-
-            shapeRules: shapeRules,
-
-            quantityRules: quantityRules,
-
-            fillRules: fillRules
+            square: tempArray[0],
+            diamond: tempArray[1],
+            circle: tempArray[2],
+            triangle: tempArray[3],
+            star: tempArray[4],
+            bolt: tempArray[5],
         }
     }
 
@@ -142,11 +112,6 @@
     // Function definitions
     /////////////////////////////////////
 
-    // returns the scoring function. 
-    // this might be stupid but it should work
-
-
-    // Example helper function to do an arbitrary thing with the canvas
     /* function step(timestamp) {
         // Set the 
         if (!initialized) {
@@ -160,11 +125,12 @@
 
     // 
     function createToken() {
+        let symbols = [];
+        for (let i = 0; i < 4; i++) {
+            symbols.push(tokenTemplate.shapes[randomInt(0, 5)]);
+        }
         return {
-            color: tokenTemplate.colors[randomInt(0, 3)],
-            shape: tokenTemplate.shapes[randomInt(0, 2)],
-            quantity: randomInt(1, 4),
-            fill: tokenTemplate.fill[randomInt(0, 1)]
+            symbols: symbols
         }
     }
 
@@ -247,13 +213,14 @@
 
         // start the path 
         ctx.beginPath();
-        ctx.fillStyle = token.color;
-        ctx.strokeStyle = token.color;
+        ctx.fillStyle = "black";
+        ctx.strokeStyle = "black";
 
         // draw the symbols
-        for (let j = 1; j <= token.quantity; j++) {
+        // 25 by 25
+        for (let j = 1; j <= token.symbols.length; j++) {
             ctx.beginPath();
-            switch (token.shape) {
+            switch (token.symbols[j - 1]) {
                 case "square":
                     ctx.moveTo(x, y);
                     ctx.lineTo(x + 25 * scale, y);
@@ -273,15 +240,23 @@
                     ctx.lineTo(x + 12.5 * scale, y);
                     break;
                 case "triangle":
+                    ctx.moveTo(x + 12.5 * scale, y);
+                    ctx.lineTo(x + 25 * scale, y + 25 * scale);
+                    ctx.lineTo(x, y + 25 * scale);
+                    ctx.lineTo(x + 12.5 * scale, y);
+                    break;
+                case "star":
+                    ctx.drawImage(star, x,y,25*scale,25*scale);
+                    break;
+                case "bolt":
+                    ctx.drawImage(bolt,x,y,25*scale,25*scale);
                     break;
                 default:
                     console.log("Error: " + token.shape + " is not a valid shape");
             }
-            if (token.fill == "solid") {
-                ctx.fill();
-            }
-            ctx.stroke();
+            ctx.fill();
 
+            // move draw location to draw next symbol
             if (j % 2 == 1) {
                 x += 30 * scale;
             } else {
@@ -317,10 +292,9 @@
     function getScore(token) {
         let value = 0;
 
-        value += scoringRules.colorRules[token.color];
-        value += scoringRules.shapeRules[token.shape];
-        value += scoringRules.quantityRules[token.quantity - 1]; //subtract 1 because arrays index from 0
-        value += scoringRules.fillRules[token.fill];
+        for (let i=1; i<=4; i++){
+            value += scoringRules[token.symbols[4-i]]; // 4-i instead of i because future proofing or something
+        }
 
         return value;
     }
@@ -382,20 +356,28 @@
     /////////////////////////////////////
 
     // now this is epic
-    initResizer();
-    let tokens = [];
-    for (let i = 0; i < 15; i++) {
-        tokens.push(createToken());
+    let star = new Image();
+    let bolt = new Image();
+
+
+    function init() {
+        star.src = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.shareicon.net%2Fdata%2F2015%2F12%2F07%2F683924_star_512x512.png&f=1&nofb=1"
+        bolt.src = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fd30y9cdsu7xlg0.cloudfront.net%2Fpng%2F9601-200.png&f=1&nofb=1"
+        initResizer();
+        for (let i = 0; i < 15; i++) {
+            tokens.push(createToken());
+        }
+        ctx.clearRect(0, 0, 540, 960);
+        
+        drawScene(tokens);
+
+        // log some stuff
+        console.log(tokens);
+        console.log("scoring Rules:");
+        console.log(scoringRules);
     }
-    ctx.clearRect(0, 0, 540, 960);
-    drawScene(tokens);
-    console.log(tokens);
-    console.log("scoring Rules:");
-    console.log(scoringRules.colorRules);
-    console.log(scoringRules.fillRules);
-    console.log(scoringRules.shapeRules);
-    console.log(scoringRules.quantityRules);
 
-
+    let tokens = [];
+    init();
     // Close and execute the IIFE here
 })();
