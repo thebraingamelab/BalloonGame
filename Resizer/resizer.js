@@ -17,6 +17,7 @@ let resizer = (function() {
     let _contexts;
 
 
+
     let _heightPlusPadding, _widthPlusPadding;
     let _paddingLeft, _paddingRight, _paddingTop, _paddingBottom;
 
@@ -26,6 +27,8 @@ let resizer = (function() {
     let _currentHeight, _currentWidth;
     let _sizeMode;
     let _orientation;
+
+    let _canvas = document.getElementById("game-canvas"); // not sure if this is right
 
 
 
