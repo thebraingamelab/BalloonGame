@@ -22,17 +22,57 @@ function createCard(i) { // a card is a list of symbols
 }
 
 
-function createScoringRules() {
+function createLinearScoringRules() {
     let tempArray = [-1, 0, 1, 2, 3, 5]
     shuffleArray(tempArray);
 
     return {
-        square: tempArray[0],
-        diamond: tempArray[1],
-        circle: tempArray[2],
-        triangle: tempArray[3],
-        star: tempArray[4],
-        bolt: tempArray[5],
+        square: (a) => a + tempArray[0],
+        diamond: (a) => a + tempArray[1],
+        circle: (a) => a + tempArray[2],
+        triangle: (a) => a + tempArray[3],
+        star: (a) => a + tempArray[4],
+        bolt: (a) => a + tempArray[5],
+    }
+}
+
+function createVariableScoringRules() {
+    let tempArray = [
+        [-3,-2,-2,-1,-1,-1,0,0,1],
+        [-2,-1,-1,0,0,0,1,1,2],
+        [-1,0,0,1,1,1,2,2,3],
+        [0,1,1,2,2,2,3,3,4],
+        [1,2,2,3,3,3,4,4,5],
+        [3,4,4,5,5,5,6,6,7],
+    ]
+    shuffleArray(tempArray);
+    console.log(tempArray);
+
+    return {
+        square: (a) => a + tempArray[0][randomInt(0,7)],
+        diamond: (a) => a + tempArray[1][randomInt(0,7)],
+        circle: (a) => a + tempArray[2][randomInt(0,7)],
+        triangle: (a) => a + tempArray[3][randomInt(0,7)],
+        star: (a) => a + tempArray[4][randomInt(0,7)],
+        bolt: (a) => a + tempArray[5][randomInt(0,7)],
+    }
+}
+
+function createBanditScoringRules(boxSize,min,max){
+    let tempArray = [[],[],[],[],[],[]]
+    for (let i = 0; i<6; i++){
+        for (let j = 0; j<boxSize; j++){
+            tempArray[i].push(randomInt(min,max))
+        }
+    }
+    
+    return {
+        square: (a) => a + tempArray[0][randomInt(0,boxSize-1)],
+        diamond: (a) => a + tempArray[1][randomInt(0,boxSize-1)],
+        circle: (a) => a + tempArray[2][randomInt(0,boxSize-1)],
+        triangle: (a) => a + tempArray[3][randomInt(0,boxSize-1)],
+        star: (a) => a + tempArray[4][randomInt(0,boxSize-1)],
+        bolt: (a) => a + tempArray[5][randomInt(0,boxSize-1)],
     }
 }
 
@@ -40,7 +80,7 @@ function getScore(card) {
     let value = 0;
 
     for (let i = 1; i <= 4; i++) {
-        value += scoringRules[card.symbols[4 - i]]; // 4-i instead of i because future proofing or something
+        value = scoringRules[card.symbols[4 - i]](value); // 4-i instead of i because future proofing or something
     }
 
     return value;

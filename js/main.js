@@ -87,7 +87,10 @@ let lastPick;
 let selected = 0;
 let turns = 40;
 let gameState = 1; //2: pre-game menu, 1: game in progress, 0: game over
-const scoringRules = createScoringRules();
+let mouseControls = true;
+// const scoringRules = createLinearScoringRules();
+var scoringRules = createVariableScoringRules();
+// scoringRules = createBanditScoringRules(12,-3,7);
 
 
 
@@ -174,7 +177,7 @@ function drawScene(tokens) {
         ctx.font = '48px serif'
         ctx.fillText("Game Over", 120, 400);
         ctx.fillText("Score: " + score, 120, 450);
-        console.log("drawing gameover screen");
+        // console.log("drawing gameover screen");
     }
 }
 
@@ -263,12 +266,32 @@ function drawCard(x, y, card, scale) {
 
 
 
-// window.addEventListener("keydown", keyDownHandler);
+window.addEventListener("keydown", keyDownHandler);
 document.addEventListener("click", handleClick);
 document.addEventListener("mousedown", handleMouseDown)
-document.addEventListener("mouseup",() => {
+document.addEventListener("mouseup", () => {
     selected = -15;
-  })
+})
+
+function selectCard(i) {
+    if (selected != 15) {
+        lastPick = {
+            card: tokens[i].symbols, //should be symbols not card but I'm too lazy to change it
+            score: getScore(tokens[i])
+        }
+        score += lastPick.score;
+        tokens[i] = createCard(i);
+        console.log("last pick: " + lastPick);
+        turns--;
+    } else if (selected = 15) {
+        tokens = [];
+        for (let i = 0; i < 15; i++) {
+            tokens.push(createCard(i));
+        }
+        turns--;
+    }
+}
+
 
 function handleClick(input) {
     let posn = resizer.getRelativeEventCoords(input);
@@ -285,30 +308,18 @@ function handleClick(input) {
             } */
             if (dX > 0 && dX < 80 && dY > 0 && dY < 120) {
                 console.log("card " + i + " selected");
-                lastPick = {
-                    card: tokens[i].symbols, //should be symbols not card but I'm too lazy to change it
-                    score: getScore(tokens[i])
-                }
-                score += lastPick.score;
-                tokens[i] = createCard(i);
-                console.log("last pick: " + lastPick);
-                turns--;
-
-                return;
+                selectCard(i)
             }
         }
         if (x > 200 && x < 320 && y > 680 && y < 740) {
-                //selected = 0;
-                tokens = [];
-                for (let i = 0; i < 15; i++) {
-                    tokens.push(createCard(i));
-                }
-                turns--;
+            selectCard(15);
         }
     }
 }
 
-function handleMouseDown(input){
+
+function handleMouseDown(input) {
+    mouseControls = true;
     let posn = resizer.getRelativeEventCoords(input);
     let x = posn.x;
     let y = posn.y;
@@ -327,13 +338,17 @@ function handleMouseDown(input){
             }
         }
         if (x > 200 && x < 320 && y > 680 && y < 740) {
-                selected = 15;
+            selected = 15;
         }
     }
 }
 
 // \begin{badfunctions}
 function keyDownHandler(key) {
+    if (mouseControls) {
+        selected = 0;
+    }
+    mouseControls = false;
     if (turns == 0) {
         gameState = 0; //switch to game over when turns run out
         console.log("game over");
@@ -379,6 +394,13 @@ function keyDownHandler(key) {
             case 32:
                 keyboardSelect();
                 break;
+
+
+        }
+        if (selected > 15) {
+            selected = 15;
+        } if (selected < 0) {
+            selected = logic.oldSelected;
         }
     }
 
@@ -435,7 +457,7 @@ function newFrame() {
             selected = logic.oldSelected;
         }
     } */ // outdated code
-    if (turns <= 0){
+    if (turns <= 0) {
         gameState = 0;
     }
 
