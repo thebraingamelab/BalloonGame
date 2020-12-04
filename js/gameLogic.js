@@ -76,6 +76,8 @@ function createCard(i) { // a card is a list of symbols
     }
 } */
 
+// commeent
+
 function createWasonScoringRules(difficulty){
     let count = randomInt(1,3);
     let rules = [];
