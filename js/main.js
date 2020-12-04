@@ -91,10 +91,14 @@ let mouseControls = true;
 // const scoringRules = createLinearScoringRules();
 // var scoringRules = createVariableScoringRules();
 // scoringRules = createBanditScoringRules(12,-3,7);
-const scoringRules = createWasonScoringRules();
-console.log(scoringRules);
+var scoringRules = createWasonScoringRules("easy");
+// console.log("scoring rules: " + scoringRules);
 
-
+function setDifficulty(dif){
+    scoringRules = createWasonScoringRules(dif);
+    console.log("new scoring rules: ");
+    console.log(scoringRules);
+}
 
 
 

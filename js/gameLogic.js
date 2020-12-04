@@ -76,7 +76,7 @@ function createCard(i) { // a card is a list of symbols
     }
 } */
 
-function createWasonScoringRules(){
+function createWasonScoringRules(difficulty){
     let count = randomInt(1,3);
     let rules = [];
     
@@ -101,8 +101,20 @@ function createWasonScoringRules(){
     }
 
     for(let i=0; i<count; i++){
-        let Y = randomInt(1,2);
-        let N = randomInt(1,5);
+        let Y; let N;
+        if (difficulty == "easy"){
+            Y = randomInt(1,2);
+            N = randomInt(1,5);
+        } else if (difficulty == "hard"){
+            Y = randomInt(2,3);
+            N = randomInt(1,2);
+        } else {
+            if (difficulty != "medium")
+                {console.log("invalid difficulty. Defaulting to medium");}
+            Y = randomInt(2,3);
+            N = randomInt(1,4);
+        }
+
         rules.push(createYesNo(Y,N));
     }
 
@@ -146,14 +158,14 @@ function shuffleArray(arr) {
 
 // is arr1 a subset of arr2?
 function IsSubset(arr1, arr2){ //this is almost as inefficient an algorithm as Bogosort but it should do for small arrays
-    console.log("testing if [" + arr1 + "] is a subset of [" + arr2 + "]")
+    // console.log("testing if [" + arr1 + "] is a subset of [" + arr2 + "]")
     let copy = [...arr2];
     for (i = 0; i<arr1.length; i++){
         for (j = 0; j<copy.length+1; j++){
             // console.log("checking " + arr1[i] + " against " + copy[j]);
             if (j == copy.length){
                 // console.log("no match found for " + arr1[i] + " in [" + copy + "]");
-                console.log("no match found for element " + i + " of [" + arr1 + "] in [" + arr2 + "]");
+                // console.log("no match found for element " + i + " of [" + arr1 + "] in [" + arr2 + "]");
                 return false
             } else if (arr1[i] == copy[j]){
                 // console.log("match found between    " + arr1[i] + " and " + copy[j]);
@@ -162,6 +174,6 @@ function IsSubset(arr1, arr2){ //this is almost as inefficient an algorithm as B
             }
         } 
     }
-    console.log("true: [" + arr1 + "] is a subset [" + arr2 + "]");
+    // console.log("true: [" + arr1 + "] is a subset [" + arr2 + "]");
     return true;
 }
