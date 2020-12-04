@@ -22,7 +22,7 @@ function createCard(i) { // a card is a list of symbols
 }
 
 
-function createLinearScoringRules() {
+/* function createLinearScoringRules() {
     let tempArray = [-1, 0, 1, 2, 3, 5]
     shuffleArray(tempArray);
 
@@ -34,9 +34,9 @@ function createLinearScoringRules() {
         star: (a) => a + tempArray[4],
         bolt: (a) => a + tempArray[5],
     }
-}
+} */
 
-function createVariableScoringRules() {
+/* function createVariableScoringRules() {
     let tempArray = [
         [-3,-2,-2,-1,-1,-1,0,0,1],
         [-2,-1,-1,0,0,0,1,1,2],
@@ -56,9 +56,9 @@ function createVariableScoringRules() {
         star: (a) => a + tempArray[4][randomInt(0,7)],
         bolt: (a) => a + tempArray[5][randomInt(0,7)],
     }
-}
+} */
 
-function createBanditScoringRules(boxSize,min,max){
+/* function createBanditScoringRules(boxSize,min,max){
     let tempArray = [[],[],[],[],[],[]]
     for (let i = 0; i<6; i++){
         for (let j = 0; j<boxSize; j++){
@@ -74,9 +74,42 @@ function createBanditScoringRules(boxSize,min,max){
         star: (a) => a + tempArray[4][randomInt(0,boxSize-1)],
         bolt: (a) => a + tempArray[5][randomInt(0,boxSize-1)],
     }
+} */
+
+function createWasonScoringRules(){
+    let count = randomInt(1,3);
+    let rules = [];
+    
+    function createYesNo(Y, N){
+        let yes = [];
+        let no = [];
+        for (let i=0; i<Y; i++){
+            yes.push(logic.shapes[randomInt(0,5)]);
+        }
+        for (let i=0; i<N; i++){
+            no.push(logic.shapes[randomInt(0,5)]);
+        }
+        if (IsSubset(no,yes)){ //reroll if condition is impossible
+            console.log("rerolling. Yes: " + yes + " No: " + no);
+            return createYesNo(Y,N);
+        } else{
+            return {
+                yes: yes,
+                no: no
+            }
+        }
+    }
+
+    for(let i=0; i<count; i++){
+        let Y = randomInt(1,2);
+        let N = randomInt(1,5);
+        rules.push(createYesNo(Y,N));
+    }
+
+    return rules;
 }
 
-function getScore(card) {
+/* function getScore(card) {
     let value = 0;
 
     for (let i = 1; i <= 4; i++) {
@@ -84,8 +117,16 @@ function getScore(card) {
     }
 
     return value;
-}
+} */
 
+function getScore(card) {
+    for(let i=0; i<scoringRules.length; i++){
+        if(IsSubset(scoringRules[i].yes, card.symbols) && !IsSubset(scoringRules[i].no, card.symbols)){
+            return 1;
+        }
+    }
+    return 0;
+}
 
 /////////////
 // General logic
@@ -101,4 +142,26 @@ function shuffleArray(arr) {
         arr[i] = arr[j];
         arr[j] = temp;
     }
+}
+
+// is arr1 a subset of arr2?
+function IsSubset(arr1, arr2){ //this is almost as inefficient an algorithm as Bogosort but it should do for small arrays
+    console.log("testing if [" + arr1 + "] is a subset of [" + arr2 + "]")
+    let copy = [...arr2];
+    for (i = 0; i<arr1.length; i++){
+        for (j = 0; j<copy.length+1; j++){
+            // console.log("checking " + arr1[i] + " against " + copy[j]);
+            if (j == copy.length){
+                // console.log("no match found for " + arr1[i] + " in [" + copy + "]");
+                console.log("no match found for element " + i + " of [" + arr1 + "] in [" + arr2 + "]");
+                return false
+            } else if (arr1[i] == copy[j]){
+                // console.log("match found between    " + arr1[i] + " and " + copy[j]);
+                delete copy[j];
+                break;
+            }
+        } 
+    }
+    console.log("true: [" + arr1 + "] is a subset [" + arr2 + "]");
+    return true;
 }

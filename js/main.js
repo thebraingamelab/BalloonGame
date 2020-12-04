@@ -89,8 +89,10 @@ let turns = 40;
 let gameState = 1; //2: pre-game menu, 1: game in progress, 0: game over
 let mouseControls = true;
 // const scoringRules = createLinearScoringRules();
-var scoringRules = createVariableScoringRules();
+// var scoringRules = createVariableScoringRules();
 // scoringRules = createBanditScoringRules(12,-3,7);
+const scoringRules = createWasonScoringRules();
+console.log(scoringRules);
 
 
 
