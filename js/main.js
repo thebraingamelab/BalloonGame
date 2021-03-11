@@ -85,17 +85,19 @@ let tPrev = 0;
 let score = 0;
 let lastPick;
 let selected = 0;
-let turns = 40;
+let turns = 0;
 let gameState = 1; //2: pre-game menu, 1: game in progress, 0: game over
 let mouseControls = true;
 // const scoringRules = createLinearScoringRules();
 // var scoringRules = createVariableScoringRules();
 // scoringRules = createBanditScoringRules(12,-3,7);
 var scoringRules = createWasonScoringRules("easy");
+var scoringTemplate = "includeExclude"
 // console.log("scoring rules: " + scoringRules);
 
 function setDifficulty(dif){
     scoringRules = createWasonScoringRules(dif);
+    scoringTemplate = "includeExclude"
     console.log("new scoring rules: ");
     console.log(scoringRules);
 }
@@ -171,18 +173,24 @@ function drawScene(tokens) {
         // draw the text
         ctx.restore();
         ctx.font = '36px serif';
-        ctx.fillText("Score: " + score, 190, 880);
+        // ctx.fillText("Score: " + score, 190, 880);
+        ctx.fillText("Turns taken: " + turns, 140, 880);
         ctx.font = '24px serif'
-        ctx.fillText("Turns remaining: " + turns, 120, 920);
+        // ctx.fillText("Turns taken: " + turns, 160, 920);
         ctx.fillText
         if (lastPick != null) {
-            ctx.fillText("+ " + lastPick.score + " points. Last pick", 100, 820);
-            drawCard(400, 770, lastPick.card, 0.5);
+            if (lastPick.score == 1) {
+                ctx.fillText("Rule MATCHED by Card:", 70, 820);
+            } else {
+                ctx.fillText("Rule VIOLATED by Card:", 70, 820);
+            }
+            
+            drawCard(420, 770, lastPick.card, 0.5);
         }
     } else if (gameState == 0) { // game over
         ctx.font = '48px serif'
         ctx.fillText("Game Over", 120, 400);
-        ctx.fillText("Score: " + score, 120, 450);
+        // ctx.fillText("Score: " + score, 120, 450);
         // console.log("drawing gameover screen");
     }
 }
@@ -288,13 +296,13 @@ function selectCard(i) {
         score += lastPick.score;
         tokens[i] = createCard(i);
         console.log("last pick: " + lastPick);
-        turns--;
+        turns++;
     } else if (selected = 15) {
         tokens = [];
         for (let i = 0; i < 15; i++) {
             tokens.push(createCard(i));
         }
-        turns--;
+        turns++;
     }
 }
 
@@ -355,10 +363,10 @@ function keyDownHandler(key) {
         selected = 0;
     }
     mouseControls = false;
-    if (turns == 0) {
+    /* if (turns == 0) {
         gameState = 0; //switch to game over when turns run out
         console.log("game over");
-    }
+    } */
     logic.oldSelected = selected;
     if (gameState == 2) {
         switch (key.keyCode) {
@@ -424,7 +432,7 @@ function keyboardSelect() {
             for (let i = 0; i < 15; i++) {
                 tokens.push(createCard(i));
             }
-            turns--;
+            turns++;
         } else {
             lastPick = {
                 card: tokens[selected].symbols, //should be symbols not card but I'm too lazy to change it
@@ -433,7 +441,7 @@ function keyboardSelect() {
             score += lastPick.score;
             tokens[selected] = createCard(selected);
             console.log("last pick: " + lastPick);
-            turns--;
+            turns++;
         }
     } else if (gameStateState == 2) { // logic involving selecting gamemode
     }
@@ -463,9 +471,9 @@ function newFrame() {
             selected = logic.oldSelected;
         }
     } */ // outdated code
-    if (turns <= 0) {
+    /* if (turns <= 0) {
         gameState = 0;
-    }
+    } */
 
     drawScene(tokens);
     window.requestAnimationFrame(newFrame);

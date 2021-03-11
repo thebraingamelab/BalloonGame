@@ -133,12 +133,18 @@ function createWasonScoringRules(difficulty){
     return value;
 } */
 
+
 function getScore(card) {
-    for(let i=0; i<scoringRules.length; i++){
-        if(IsSubset(scoringRules[i].yes, card.symbols) && !IsSubset(scoringRules[i].no, card.symbols)){
-            return 1;
+    switch (scoringTemplate) {
+        case "includeExclude": 
+        default: 
+        for(let i=0; i<scoringRules.length; i++){
+            if(IsSubset(scoringRules[i].yes, card.symbols) && !IsSubset(scoringRules[i].no, card.symbols)){
+                return 1;
+            }
         }
     }
+    
     return 0;
 }
 
