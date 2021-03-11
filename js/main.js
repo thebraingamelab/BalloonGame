@@ -91,12 +91,17 @@ let mouseControls = true;
 // const scoringRules = createLinearScoringRules();
 // var scoringRules = createVariableScoringRules();
 // scoringRules = createBanditScoringRules(12,-3,7);
-var scoringRules = createWasonScoringRules("easy");
-var scoringTemplate = "includeExclude"
+var scoringTemplate;
+var scoringRules = randomRule();
+/* var scoringRules = createHardIncludeExclude("easy");
+scoringRules = createEasyIncludeExclude(false);
+scoringRules = createPositionalRule(true);
+scoringRules = createDuplicateRule(); */
+
 // console.log("scoring rules: " + scoringRules);
 
 function setDifficulty(dif){
-    scoringRules = createWasonScoringRules(dif);
+    scoringRules = createHardIncludeExclude(dif);
     scoringTemplate = "includeExclude"
     console.log("new scoring rules: ");
     console.log(scoringRules);
@@ -493,6 +498,7 @@ function init() {
     // log some stuff
     console.log("scoring Rules:");
     console.log(scoringRules);
+    console.log(scoringTemplate);
 }
 
 let tokens = [];
