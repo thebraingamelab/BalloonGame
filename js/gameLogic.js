@@ -129,7 +129,6 @@ function createEasyIncludeExclude(invert) {
     let no = [];
     if (invert) {
         no.push(logic.shapes[randomInt(0, 5)]);
-        yes.push("myCodeSucksLm");
     } else {
         yes.push(logic.shapes[randomInt(0, 5)]);
         no.push("thisFixIsStupid");
