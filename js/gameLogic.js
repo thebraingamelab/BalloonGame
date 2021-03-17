@@ -79,7 +79,7 @@ function createCard(i) { // a card is a list of symbols
 // commeent
 
 function createHardIncludeExclude(difficulty) {
-    scoringTemplate = "includExclude"
+    scoringTemplate = "includeExclude"
     let count = randomInt(1, 3);
     let rules = [];
 
