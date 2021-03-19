@@ -126,10 +126,10 @@ function updateButtons(){
                     height: 50,
                     display: {
                         color: "grey",
-                        font: '22px serif',
-                        text: "Test Rule",
+                        font: '32px serif',
+                        text: "Reroll",
                         textColor: "yellow",
-                        textX: 202,
+                        textX: 210,
                         textY: 720,
                     }
                     
