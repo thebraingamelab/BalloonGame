@@ -86,8 +86,10 @@ let score = 0;
 let lastPick;
 let selected = 0;
 let turns = 0;
-let gameState = 1; //2: pre-game menu, 1: game in progress, 0: game over
+let gameState; //2: pre-game menu, 1: game in progress, 0: game over
 let mouseControls = true;
+let pickHistory = [];
+let buttons = [];
 // const scoringRules = createLinearScoringRules();
 // var scoringRules = createVariableScoringRules();
 // scoringRules = createBanditScoringRules(12,-3,7);
@@ -112,6 +114,33 @@ function setDifficulty(dif){
 /////////////////////////////////////
 // Function definitions
 /////////////////////////////////////
+function updateButtons(){
+    switch(gameState){
+        case "sampling":
+            buttons = [
+                {
+                    name: "reroll", 
+                    x: 200,
+                    y: 685,
+                    width: 120,
+                    height: 50,
+                    display: {
+                        color: "grey",
+                        font: '22px serif',
+                        text: "Test Rule",
+                        textColor: "yellow",
+                        textX: 202,
+                        textY: 720,
+                    }
+                    
+                }
+            ]
+            break;
+        default:
+            buttons = [];
+    }
+}
+
 
 function drawScene(tokens) {
     ctx.clearRect(0, 0, 540, 960); // clear the frame
@@ -123,53 +152,36 @@ function drawScene(tokens) {
         }
     }
 
-    // for position of menu elements?
-    // I'm pretty sure this is a dumb way to do it but it works decently well for now
-    function mPosn(x, y) {
-        return {
-            x: 100 + 200 * x,
-            y: 300 + 200 * y
-        }
-    }
-    if (gameState == 2) {
-        ctx.save();
-        let hPosn = mPosn(Math.floor(selected / 3), selected % 3); // this is stupid
-        ctx.fillStyle = "orange"
-        ctx.fillRect(hPosn.x - 5, hPosn.y - 5, 110, 60); // this is extremely stupid
-
-        ctx.fillStyle = "red";
-        ctx.font = "24px serif";
-
-        ctx.fillText("Symbols", 96, 180);
-        ctx.fillText("per card", 96, 205);
-
-        ctx.fillText("Scoring rules", 260, 190);
-
-        drawMenuElement(1, 1, "always 4");
-        drawMenuElement(1, 2, "always 1");
-        drawMenuElement(1, 3, "random");
-
-        drawMenuElement(2, 1, "linear");
-        drawMenuElement(2, 2, "random");
-        drawMenuElement(2, 3, "complex");
-
-        ctx.restore()
-    } else if (gameState == 1) { // gamne is in progress
+    if (gameState == "sampling") { // gamne is in progress
         ctx.save();
         // halo around selected card
         ctx.fillStyle = "blue";
-        if (selected == 15) { // halo is different for selected button
+        if (selected == 15) { // everyone loves redundant code. OH BOY
             ctx.fillRect(195, 675, 130, 70);
-        } else {
+        } else if (selected > 900){
+            let thisWork; thisWork = selected - 901; // I am losing my mind
+            ctx.fillRect(buttons[thisWork].x - 5, buttons[thisWork].y - 5, buttons[thisWork].width + 10, buttons[thisWork].height + 10);
+        } 
+        else {
             ctx.fillRect(posn(selected).x - 5, posn(selected).y - 5, 90, 130);
         }
 
-        // draw the reset button
-        ctx.fillStyle = 'grey'
-        ctx.fillRect(200, 680, 120, 60)
-        ctx.font = '36px serif'
+        // draw the test rule button
+        for (let i = 0; i<buttons.length; i++){
+            ctx.fillStyle = buttons[i].display.color;
+            ctx.fillRect(buttons[i].x, buttons[i].y, buttons[i].width, buttons[i].height);  
+            ctx.font = buttons[i].display.font;
+            ctx.fillStyle = buttons[i].display.textColor;
+            ctx.fillText(buttons[i].display.text, buttons[i].display.textX, buttons[i].display.textY);
+        }
+
+/*      ctx.fillStyle = 'grey'
+        ctx.fillRect(200, 685, 120, 50)
+        ctx.font = '22px serif'
         ctx.fillStyle = 'yellow'
-        ctx.fillText("Reroll", 205, 720)
+        ctx.fillText("Test Rule", 202, 720) */
+
+        // draw
 
         for (let i = 0; i < tokens.length; i++) {
             drawCard(tokens[i].x, tokens[i].y, tokens[i].symbols, 1);
@@ -192,7 +204,7 @@ function drawScene(tokens) {
             
             drawCard(420, 770, lastPick.card, 0.5);
         }
-    } else if (gameState == 0) { // game over
+    } else if (gameState == "game over") { // game over
         ctx.font = '48px serif'
         ctx.fillText("Game Over", 120, 400);
         // ctx.fillText("Score: " + score, 120, 450);
@@ -200,7 +212,7 @@ function drawScene(tokens) {
     }
 }
 
-function drawMenuElement(x, y, text) {
+function drawMenuElement(x, y, text) { // probably redundant at this point
     x = -100 + 200 * x;
     y = 100 + 200 * y;
 
@@ -293,21 +305,39 @@ document.addEventListener("mouseup", () => {
 })
 
 function selectCard(i) {
-    if (selected != 15) {
+    if (i != 15) {
         lastPick = {
-            card: tokens[i].symbols, //should be symbols not card but I'm too lazy to change it
-            score: getScore(tokens[i])
-        }
+            card: cards[i].symbols, //should be symbols not card but I'm too lazy to change it
+            score: getScore(cards[i])
+        } 
+        pickHistory.push(lastPick);
         score += lastPick.score;
-        tokens[i] = createCard(i);
+        cards[i] = createCard(i);
         console.log("last pick: " + lastPick);
         turns++;
-    } else if (selected = 15) {
-        tokens = [];
-        for (let i = 0; i < 15; i++) {
-            tokens.push(createCard(i));
+    } else {
+        console.log("what have you done");
+    }
+    
+    if (i == 15) {
+        cards = [];
+        for (let j = 0; j < 15; j++) {
+            cards.push(createCard(j));
         }
         turns++;
+    }
+}
+
+function pushButton(button){
+    switch(button){
+        case "reroll":
+            cards = [];
+            for (let j = 0; j < 15; j++) {``
+                cards.push(createCard(j));
+            }
+            break;
+        default:
+            console.log("invalidButton:" + button)
     }
 }
 
@@ -318,10 +348,11 @@ function handleClick(input) {
     let y = posn.y;
     console.log("logged mouse move at x=" + x + ", y=" + y);
 
-    if (gameState == 1) {
+    if (gameState == "sampling") {
+        let dX; let dY;
         for (let i = 0; i < 15; i++) {
-            let dX = x - tokens[i].x;
-            let dY = y - tokens[i].y;
+            dX = x - cards[i].x;
+            dY = y - cards[i].y;
             /* if (i == 0) {
                 console.log("relative position to card " + i + ": (" + dX + "," + dY + ").");
             } */
@@ -330,24 +361,31 @@ function handleClick(input) {
                 selectCard(i)
             }
         }
-        if (x > 200 && x < 320 && y > 680 && y < 740) {
-            selectCard(15);
+        for (let i=0; i<buttons.length; i++){
+            dX = x - buttons[i].x;
+            dY = y - buttons[i].y;
+            // console.log("yaba daba dooooo: " + dX + " " + dY);
+            if (dX > 0 && dX < buttons[i].width && dY > 0 && dY < buttons[i].height) {
+                pushButton(buttons[i].name);
+                return;
+            }
         }
     }
 }
 
 
-function handleMouseDown(input) {
+function handleMouseDown(input) { // sets value of selected to create shiny blue halo. 
     mouseControls = true;
     let posn = resizer.getRelativeEventCoords(input);
     let x = posn.x;
     let y = posn.y;
-    console.log("logged mouse move at x=" + x + ", y=" + y);
+    // console.log("logged mouse move at x=" + x + ", y=" + y);
 
-    if (gameState == 1) {
+    if (gameState == "sampling") {
+        let dX; let dY; 
         for (let i = 0; i < 15; i++) {
-            let dX = x - tokens[i].x;
-            let dY = y - tokens[i].y;
+            dX = x - cards[i].x;
+            dY = y - cards[i].y;
             /* if (i == 0) {
                 console.log("relative position to card " + i + ": (" + dX + "," + dY + ").");
             } */
@@ -356,9 +394,17 @@ function handleMouseDown(input) {
                 return;
             }
         }
-        if (x > 200 && x < 320 && y > 680 && y < 740) {
-            selected = 15;
+        for (let i=0; i<buttons.length; i++){
+            dX = x - buttons[i].x;
+            dY = y - buttons[i].y;
+            // console.log("yaba daba dooooo: " + dX + " " + dY);
+            if (dX > 0 && dX < buttons[i].width && dY > 0 && dY < buttons[i].height) {
+                selected = 901 + i;
+                // console.log("now this is epic");
+                return;
+            }
         }
+
     }
 }
 
@@ -373,26 +419,7 @@ function keyDownHandler(key) {
         console.log("game over");
     } */
     logic.oldSelected = selected;
-    if (gameState == 2) {
-        switch (key.keyCode) {
-            case 37: // left
-                selected -= 3;
-                break;
-            case 38: // up
-                selected--
-                break;
-            case 39: // right
-                selected += 3;
-                break;
-            case 40: // down
-                selected++;
-                break;
-            case 32:
-                keyboardSelect();
-                break;
-        }
-    }
-    else if (gameState == 1) {
+    if (gameState == "sampling") {
         switch (key.keyCode) {
             case 37: // left
                 selected--;
@@ -411,7 +438,7 @@ function keyDownHandler(key) {
                 selected += 5;
                 break;
             case 32:
-                keyboardSelect();
+                selectCard(selected);
                 break;
 
 
@@ -429,28 +456,6 @@ function keyDownHandler(key) {
     // console.log("selected = " + selected);
 }
 
-function keyboardSelect() {
-    if (gameState == 1) { // select card
-        if (selected == 15) {
-            //selected = 0;
-            tokens = [];
-            for (let i = 0; i < 15; i++) {
-                tokens.push(createCard(i));
-            }
-            turns++;
-        } else {
-            lastPick = {
-                card: tokens[selected].symbols, //should be symbols not card but I'm too lazy to change it
-                score: getScore(tokens[selected])
-            }
-            score += lastPick.score;
-            tokens[selected] = createCard(selected);
-            console.log("last pick: " + lastPick);
-            turns++;
-        }
-    } else if (gameStateState == 2) { // logic involving selecting gamemode
-    }
-}
 // \end{badfunctions}
 
 /////////////////////////////////////
@@ -476,11 +481,11 @@ function newFrame() {
             selected = logic.oldSelected;
         }
     } */ // outdated code
-    /* if (turns <= 0) {
+    /* if (turns <= 0) {    
         gameState = 0;
     } */
 
-    drawScene(tokens);
+    drawScene(cards);
     window.requestAnimationFrame(newFrame);
 }
 
@@ -489,9 +494,11 @@ function init() {
     bolt.src = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fd30y9cdsu7xlg0.cloudfront.net%2Fpng%2F9601-200.png&f=1&nofb=1"
     initResizer();
     for (let i = 0; i < 15; i++) {
-        tokens.push(createCard(i));
+        cards.push(createCard(i));
     }
     ctx.clearRect(0, 0, 540, 960);
+    gameState = "sampling";
+    updateButtons(); // fetch button list for current gamestate;
 
     newFrame();
 
@@ -501,7 +508,7 @@ function init() {
     console.log(scoringTemplate);
 }
 
-let tokens = [];
+let cards = [];
 init();
     // Close and execute the IIFE here
 // })();
