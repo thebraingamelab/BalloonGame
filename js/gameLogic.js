@@ -127,7 +127,7 @@ function createEasyIncludeExclude(invert) {
     scoringTemplate = "includeExclude"
     let yes = [];
     let no = [];
-    if (invert) {
+    if (invert) { // is symbol absant/is symbol present. 
         no.push(logic.shapes[randomInt(0, 5)]);
     } else {
         yes.push(logic.shapes[randomInt(0, 5)]);
@@ -143,15 +143,15 @@ function createPositionalRule(invert) {
     scoringTemplate = "positional";
     let positions = [];
     let symbols = [];
-    if (invert){
+    if (invert){ // many shapes one position/one shape many positions?
         let tempArray = logic.shapes;
         shuffleArray(tempArray);
         symbols = tempArray.slice(0,randomInt(1,5));
-        positions = [randomInt(0,3)];
+        positions = [randomInt(0,5)];
     } else {
-        let tempArray = [0,1,2,3];
+        let tempArray = [0,1,2,3,4,5];
         shuffleArray(tempArray);
-        positions = tempArray.slice(0,randomInt(1,3));
+        positions = tempArray.slice(0,randomInt(1,5));
         symbols = [logic.shapes[randomInt(1,5)]];
     }
     return {
@@ -162,10 +162,22 @@ function createPositionalRule(invert) {
 
 function createDuplicateRule(){
     scoringTemplate = "duplicate";
-    let duplicatesRequired = Math.floor(randomInt(6,9)/3);
+    let duplicatesRequired = Math.floor(randomInt(2,4));
     let invert = (randomInt(0,1) == 1); // too lazy to cast this to a Boolean
     return {
         duplicatesRequired: duplicatesRequired,
+        invert: invert // always saying 0 for now
+    }
+}
+
+function createSizeRule(){
+    scoringTemplate = "size";
+    let size = randomInt(1,6);
+    let requireEquality = (randomInt(0,1) == 1);
+    let invert = (randomInt(0,1) == 1);
+    return {
+        size: size,
+        requireEquality: requireEquality,
         invert: invert
     }
 }
@@ -184,10 +196,7 @@ function createDuplicateRule(){
 function randomRule(){
     rand = randomInt(1,6);
     switch (rand){
-        case 1:
-            let difficulties = ["easy", "medium", "hard"];
-            shuffleArray(difficulties);
-            return createHardIncludeExclude(difficulties[0]);
+        case 1: return createSizeRule();
         case 2: return createEasyIncludeExclude(false);
         case 3: return createEasyIncludeExclude(true);
         case 4: return createPositionalRule(false);
@@ -197,6 +206,9 @@ function randomRule(){
 }
 
 function getScore(card) {
+    if(card.symbols.length == 0) {
+        return -1 // empty card is invalid
+    }
     switch (scoringTemplate) {
         case "includeExclude":
             for (let i = 0; i < scoringRules.length; i++) {
@@ -217,6 +229,16 @@ function getScore(card) {
                     dupe.push(logic.shapes[i]);
                 }
                 if (IsSubset(dupe, card.symbols)){
+                    return (true != scoringRules.invert); // flipped if inverted
+                }
+            } return (false != scoringRules.invert);
+        case "size":
+            if (scoringRules.requireEquality){
+                if (card.symbols.length == scoringRules.size) { 
+                    return (true != scoringRules.invert);
+                }
+            } else {
+                if(card.symbols.length <= scoringRules.size){
                     return (true != scoringRules.invert);
                 }
             } return (false != scoringRules.invert);

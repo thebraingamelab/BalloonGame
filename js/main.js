@@ -84,7 +84,7 @@ let initialized = false;
 let tPrev = 0;
 let score = 0;
 let lastPick;
-let selected = 0;
+let selected = -15;
 let turns = 0;
 let gameState; //2: pre-game menu, 1: game in progress, 0: game over
 let mouseControls = true;
@@ -118,8 +118,9 @@ function updateButtons(){
     switch(gameState){
         case "sampling":
             buttons = [
+                // clear
                 {
-                    name: "reroll", 
+                    name: "clear", 
                     x: 200,
                     y: 685,
                     width: 120,
@@ -127,13 +128,115 @@ function updateButtons(){
                     display: {
                         color: "grey",
                         font: '32px serif',
-                        text: "Reroll",
+                        text: "Clear",
                         textColor: "yellow",
-                        textX: 210,
-                        textY: 720,
+                        textX: 12,
+                        textY: 35,
                     }
                     
-                }
+                }, 
+
+                // add triangle 
+                {
+                    name: "add shape",
+                    x: 50,
+                    y: 215,
+                    width: 120,
+                    height: 50,
+                    display: {
+                        color: "grey",
+                        font: '28px serif',
+                        text: "triangle",
+                        textColor: "yellow",
+                        textX: 3,
+                        textY: 35,
+                    }
+                }, 
+
+                // add circle 
+                {
+                    name: "add shape",
+                    x: 200,
+                    y: 215,
+                    width: 120,
+                    height: 50,
+                    display: {
+                        color: "grey",
+                        font: '28px serif',
+                        text: "square",
+                        textColor: "yellow",
+                        textX: 9,
+                        textY: 33,
+                    }
+                },
+
+                // add square 
+                {
+                    name: "add shape",
+                    x: 350,
+                    y: 215,
+                    width: 120,
+                    height: 50,
+                    display: {
+                        color: "grey",
+                        font: '28px serif',
+                        text: "circle",
+                        textColor: "yellow",
+                        textX: 12,
+                        textY: 33,
+                    }
+                }, 
+
+                // add bolt 
+                {
+                    name: "add shape",
+                    x: 50,
+                    y: 285,
+                    width: 120,
+                    height: 50,
+                    display: {
+                        color: "grey",
+                        font: '28px serif',
+                        text: "bolt",
+                        textColor: "yellow",
+                        textX: 25,
+                        textY: 33,
+                    }
+                }, 
+
+                // add diamond 
+                {
+                    name: "add shape",
+                    x: 200,
+                    y: 285,
+                    width: 120,
+                    height: 50,
+                    display: {
+                        color: "grey",
+                        font: '28px serif',
+                        text: "diamond",
+                        textColor: "yellow",
+                        textX: 0,
+                        textY: 33,
+                    }
+                }, 
+
+                // add star 
+                {
+                    name: "add shape",
+                    x: 350,
+                    y: 285,
+                    width: 120,
+                    height: 50,
+                    display: {
+                        color: "grey",
+                        font: '28px serif',
+                        text: "star",
+                        textColor: "yellow",
+                        textX: 25,
+                        textY: 33,
+                    }
+                }, 
             ]
             break;
         default:
@@ -142,10 +245,10 @@ function updateButtons(){
 }
 
 
-function drawScene(tokens) {
+function drawScene() {
     ctx.clearRect(0, 0, 540, 960); // clear the frame
     // where to draw the ith card
-    function posn(i) {
+    function posn(i) { //more outdated code lol
         return {
             x: 20 + (100 * i % 500),
             y: 200 + 160 * Math.floor(i / 5)
@@ -156,35 +259,27 @@ function drawScene(tokens) {
         ctx.save();
         // halo around selected card
         ctx.fillStyle = "blue";
-        if (selected == 15) { // everyone loves redundant code. OH BOY
-            ctx.fillRect(195, 675, 130, 70);
-        } else if (selected > 900){
+        if (selected > 900){
             let thisWork; thisWork = selected - 901; // I am losing my mind
             ctx.fillRect(buttons[thisWork].x - 5, buttons[thisWork].y - 5, buttons[thisWork].width + 10, buttons[thisWork].height + 10);
         } 
-        else {
-            ctx.fillRect(posn(selected).x - 5, posn(selected).y - 5, 90, 130);
+        else if (selected >= 0 && selected < cards.length){
+            ctx.fillRect(cards[selected].x - 5*cards[selected].scale, cards[selected].y - 5*cards[selected].scale, 
+                90*cards[selected].scale, 130*cards[selected].scale);
         }
 
-        // draw the test rule button
+        // draw the menu elements
         for (let i = 0; i<buttons.length; i++){
             ctx.fillStyle = buttons[i].display.color;
             ctx.fillRect(buttons[i].x, buttons[i].y, buttons[i].width, buttons[i].height);  
             ctx.font = buttons[i].display.font;
             ctx.fillStyle = buttons[i].display.textColor;
-            ctx.fillText(buttons[i].display.text, buttons[i].display.textX, buttons[i].display.textY);
+            ctx.fillText(buttons[i].display.text, 
+                buttons[i].x + buttons[i].display.textX, buttons[i].y + buttons[i].display.textY);
         }
-
-/*      ctx.fillStyle = 'grey'
-        ctx.fillRect(200, 685, 120, 50)
-        ctx.font = '22px serif'
-        ctx.fillStyle = 'yellow'
-        ctx.fillText("Test Rule", 202, 720) */
-
-        // draw
-
-        for (let i = 0; i < tokens.length; i++) {
-            drawCard(tokens[i].x, tokens[i].y, tokens[i].symbols, 1);
+        
+        for (let i = 0; i < cards.length; i++) {
+            drawCard(cards[i].x, cards[i].y, cards[i].symbols, 1.5);
         }
 
         // draw the text
@@ -198,11 +293,13 @@ function drawScene(tokens) {
         if (lastPick != null) {
             if (lastPick.score == 1) {
                 ctx.fillText("Rule MATCHED by Card:", 70, 820);
-            } else {
+                drawCard(420, 770, lastPick.card, 0.5);
+            } else if (lastPick.score == 0){
                 ctx.fillText("Rule VIOLATED by Card:", 70, 820);
-            }
-            
-            drawCard(420, 770, lastPick.card, 0.5);
+                drawCard(420, 770, lastPick.card, 0.5);
+            } else if (lastPick.score == -1){
+                ctx.fillText("ERROR: Empty Card is Invalid.", 70, 820);
+            }    
         }
     } else if (gameState == "game over") { // game over
         ctx.font = '48px serif'
@@ -234,7 +331,7 @@ function drawCard(x, y, card, scale) {
 
     // x and y will change when drawing symbols on card
     x += 10 * scale;
-    y += 30 * scale;
+    y += 15 * scale;
 
     // start the path 
     ctx.beginPath();
@@ -297,7 +394,7 @@ function drawCard(x, y, card, scale) {
 
 
 
-window.addEventListener("keydown", keyDownHandler);
+// window.addEventListener("keydown", keyDownHandler);
 document.addEventListener("click", handleClick);
 document.addEventListener("mousedown", handleMouseDown)
 document.addEventListener("mouseup", () => {
@@ -312,7 +409,7 @@ function selectCard(i) {
         } 
         pickHistory.push(lastPick);
         score += lastPick.score;
-        cards[i] = createCard(i);
+        cards[i].symbols = []; 
         console.log("last pick: " + lastPick);
         turns++;
     } else {
@@ -329,11 +426,20 @@ function selectCard(i) {
 }
 
 function pushButton(button){
-    switch(button){
-        case "reroll":
+    switch(button.name){
+        case "reroll": //more redundant code
             cards = [];
             for (let j = 0; j < 15; j++) {``
                 cards.push(createCard(j));
+            }
+            break;
+        case "clear":
+            cards[0].symbols = [];
+            break;
+        case "add shape":
+            if(cards[0].symbols.length < 6){
+                cards[0].symbols.push(button.display.text); // this is so fucking stupid
+                console.log(button.display.text);
             }
             break;
         default:
@@ -350,13 +456,13 @@ function handleClick(input) {
 
     if (gameState == "sampling") {
         let dX; let dY;
-        for (let i = 0; i < 15; i++) {
+        for (let i = 0; i < cards.length; i++) {
             dX = x - cards[i].x;
             dY = y - cards[i].y;
             /* if (i == 0) {
                 console.log("relative position to card " + i + ": (" + dX + "," + dY + ").");
             } */
-            if (dX > 0 && dX < 80 && dY > 0 && dY < 120) {
+            if (dX > 0 && dX < 80*cards[i].scale && dY > 0 && dY < 120*cards[i].scale) {
                 console.log("card " + i + " selected");
                 selectCard(i)
             }
@@ -366,7 +472,7 @@ function handleClick(input) {
             dY = y - buttons[i].y;
             // console.log("yaba daba dooooo: " + dX + " " + dY);
             if (dX > 0 && dX < buttons[i].width && dY > 0 && dY < buttons[i].height) {
-                pushButton(buttons[i].name);
+                pushButton(buttons[i]);
                 return;
             }
         }
@@ -383,13 +489,13 @@ function handleMouseDown(input) { // sets value of selected to create shiny blue
 
     if (gameState == "sampling") {
         let dX; let dY; 
-        for (let i = 0; i < 15; i++) {
+        for (let i = 0; i < cards.length; i++) {
             dX = x - cards[i].x;
             dY = y - cards[i].y;
             /* if (i == 0) {
                 console.log("relative position to card " + i + ": (" + dX + "," + dY + ").");
             } */
-            if (dX > 0 && dX < 80 && dY > 0 && dY < 120) {
+            if (dX > 0 && dX < 80*cards[i].scale && dY > 0 && dY < 120*cards[i].scale) {
                 selected = i;
                 return;
             }
@@ -493,9 +599,15 @@ function init() {
     star.src = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.shareicon.net%2Fdata%2F2015%2F12%2F07%2F683924_star_512x512.png&f=1&nofb=1"
     bolt.src = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fd30y9cdsu7xlg0.cloudfront.net%2Fpng%2F9601-200.png&f=1&nofb=1"
     initResizer();
-    for (let i = 0; i < 15; i++) {
+    /* for (let i = 0; i < 15; i++) {
         cards.push(createCard(i));
-    }
+    } */
+    cards.push({
+        symbols: [],
+        scale: 1.5,
+        x: 200,
+        y: 435
+    })
     ctx.clearRect(0, 0, 540, 960);
     gameState = "sampling";
     updateButtons(); // fetch button list for current gamestate;
