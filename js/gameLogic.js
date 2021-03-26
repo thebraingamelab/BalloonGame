@@ -80,7 +80,7 @@ function createCard(i) { // a card is a list of symbols
 
 function createHardIncludeExclude(difficulty) {
     scoringTemplate = "includeExclude"
-    let count = randomInt(1, 3);
+    let count = Math.floor(randomInt(2, 4)/2);
     let rules = [];
 
     function createYesNo(Y, N) {
@@ -112,9 +112,9 @@ function createHardIncludeExclude(difficulty) {
             Y = randomInt(2, 3);
             N = randomInt(1, 2);
         } else {
-            if (difficulty != "medium") { console.log("invalid difficulty. Defaulting to medium"); }
-            Y = randomInt(2, 3);
-            N = randomInt(1, 4);
+            if (difficulty != "medium") { console.log("invalid difficulty. Defaulting to medium"); } //lol lmao
+            Y = randomInt(1, 3);
+            N = randomInt(1, 5);
         }
 
         rules.push(createYesNo(Y, N));
@@ -137,6 +137,39 @@ function createEasyIncludeExclude(invert) {
         yes: yes,
         no: no
     }]
+}
+
+function YesAndNo(){
+    scoringTemplate = "includeExclude"
+    yes = [logic.shapes[randomInt(0, 5)]];
+    no = [logic.shapes[randomInt(0, 5)]];
+    if (IsSubset(yes,no)) {
+        return YesAndNo();
+    } else {
+        return [{
+            yes: yes,
+            no: no
+        }]
+    }
+}
+
+function nPresent(){
+    scoringTemplate = "includeExclude"
+    let n = randomInt(1,5);
+    let rules = [];
+    for (let i=0; i<n; i++){
+        let yes = [];
+        let shape = [logic.shapes[randomInt(0,5)]];
+        let m = randomInt(1,4);
+        for (let j=0; j<m; j++){
+            yes.push(shape);
+        }
+        rules.push({
+            yes: yes,
+            no: "ThisFixIsStupid"
+        })
+    }
+    return rules;
 }
 
 function createPositionalRule(invert) {
@@ -194,14 +227,16 @@ function createSizeRule(){
 } */
 
 function randomRule(){
-    rand = randomInt(1,6);
+    rand = randomInt(1,8);
     switch (rand){
         case 1: return createSizeRule();
-        case 2: return createEasyIncludeExclude(false);
-        case 3: return createEasyIncludeExclude(true);
+        case 2: return createEasyIncludeExclude(randomInt(1,2) == 1);
+        case 3: return YesAndNo();
         case 4: return createPositionalRule(false);
         case 5: return createPositionalRule(true);
         case 6: return createDuplicateRule();
+        case 7: return createHardIncludeExclude("medium");
+        case 8: return nPresent();
     }
 }
 
