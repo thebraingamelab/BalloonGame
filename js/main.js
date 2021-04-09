@@ -83,6 +83,7 @@ const margin = 10;
 let initialized = false;
 let tPrev = 0;
 let score = 0;
+let scoreMultiplier = 1;
 let lastPick;
 let selected = -15;
 let turns = 0;
@@ -102,7 +103,7 @@ scoringRules = createDuplicateRule(); */
 
 // console.log("scoring rules: " + scoringRules);
 
-function setDifficulty(dif){
+function setDifficulty(dif) {
     scoringRules = createHardIncludeExclude(dif);
     scoringTemplate = "includeExclude"
     console.log("new scoring rules: ");
@@ -114,13 +115,13 @@ function setDifficulty(dif){
 /////////////////////////////////////
 // Function definitions
 /////////////////////////////////////
-function updateButtons(){
-    switch(gameState){
-        case "sampling":
+function updateButtons() {
+    switch (gameState) {
+        case "discovery": // inb4 "shouldn't this be 'discovering' since the other state is testing" 
             buttons = [
                 // clear
                 {
-                    name: "clear", 
+                    name: "clear",
                     x: 200,
                     y: 685,
                     width: 120,
@@ -133,14 +134,31 @@ function updateButtons(){
                         textX: 12,
                         textY: 35,
                     }
-                    
-                }, 
+
+                },
+
+                // switch to testing
+                {
+                    name: "test",
+                    x: 140,
+                    y: 145,
+                    width: 250,
+                    height: 50,
+                    display: {
+                        color: "grey",
+                        font: '28px serif',
+                        text: "Test Hypothesis",
+                        textColor: "orange",
+                        textX: 12,
+                        textY: 35,
+                    }
+                },
 
                 // add triangle 
                 {
                     name: "add shape",
                     x: 50,
-                    y: 215,
+                    y: 245,
                     width: 120,
                     height: 50,
                     display: {
@@ -151,13 +169,13 @@ function updateButtons(){
                         textX: 3,
                         textY: 35,
                     }
-                }, 
+                },
 
                 // add circle 
                 {
                     name: "add shape",
                     x: 200,
-                    y: 215,
+                    y: 245,
                     width: 120,
                     height: 50,
                     display: {
@@ -174,7 +192,7 @@ function updateButtons(){
                 {
                     name: "add shape",
                     x: 350,
-                    y: 215,
+                    y: 245,
                     width: 120,
                     height: 50,
                     display: {
@@ -185,13 +203,13 @@ function updateButtons(){
                         textX: 12,
                         textY: 33,
                     }
-                }, 
+                },
 
                 // add bolt 
                 {
                     name: "add shape",
                     x: 50,
-                    y: 285,
+                    y: 315,
                     width: 120,
                     height: 50,
                     display: {
@@ -202,13 +220,13 @@ function updateButtons(){
                         textX: 25,
                         textY: 33,
                     }
-                }, 
+                },
 
                 // add diamond 
                 {
                     name: "add shape",
                     x: 200,
-                    y: 285,
+                    y: 315,
                     width: 120,
                     height: 50,
                     display: {
@@ -219,13 +237,13 @@ function updateButtons(){
                         textX: 0,
                         textY: 33,
                     }
-                }, 
+                },
 
                 // add star 
                 {
                     name: "add shape",
                     x: 350,
-                    y: 285,
+                    y: 315,
                     width: 120,
                     height: 50,
                     display: {
@@ -236,7 +254,59 @@ function updateButtons(){
                         textX: 25,
                         textY: 33,
                     }
-                }, 
+                },
+            ]
+            break;
+        case "testing":
+            buttons = [
+                {
+                    name: "lead",
+                    x: 50,
+                    y: 345,
+                    width: 120,
+                    height: 50,
+                    display: {
+                        color: "grey",
+                        font: '26px serif',
+                        text: "Violates",
+                        textColor: "purple",
+                        textX: 3,
+                        textY: 35,
+                    }
+                },
+
+                // add circle 
+                {
+                    name: "gold",
+                    x: 350,
+                    y: 345,
+                    width: 120,
+                    height: 50,
+                    display: {
+                        color: "grey",
+                        font: '26px serif',
+                        text: "Matches",
+                        textColor: "gold",
+                        textX: 5,
+                        textY: 35,
+                    }
+                },
+
+                {
+                    name: "stopTest",
+                    x: 140,
+                    y: 225,
+                    width: 250,
+                    height: 50,
+                    display: {
+                        color: "grey",
+                        font: '32px serif',
+                        text: "Stop Testing",
+                        textColor: "orange",
+                        textX: 24,
+                        textY: 35,
+                    }
+                },
             ]
             break;
         default:
@@ -244,6 +314,15 @@ function updateButtons(){
     }
 }
 
+function switchState(state) {
+    gameState = state;
+    updateButtons();
+    if (gameState == "testing") {
+        cards[0] = createCard();
+    } else if (gameState == "discovery"){
+        cards[0].symbols = [];
+    }
+}
 
 function drawScene() {
     ctx.clearRect(0, 0, 540, 960); // clear the frame
@@ -255,30 +334,30 @@ function drawScene() {
         }
     }
 
-    if (gameState == "sampling") { // gamne is in progress
-        ctx.save();
-        // halo around selected card
+    ctx.save();
+    if (gameState == "discovery") { // gamne is in progress
+        // halo around selected card or button
         ctx.fillStyle = "blue";
-        if (selected > 900){
+        if (selected > 900) { // selected > 900 means a button is selected.
             let thisWork; thisWork = selected - 901; // I am losing my mind
             ctx.fillRect(buttons[thisWork].x - 5, buttons[thisWork].y - 5, buttons[thisWork].width + 10, buttons[thisWork].height + 10);
-        } 
-        else if (selected >= 0 && selected < cards.length){
-            ctx.fillRect(cards[selected].x - 5*cards[selected].scale, cards[selected].y - 5*cards[selected].scale, 
-                90*cards[selected].scale, 130*cards[selected].scale);
+        }
+        else if (selected >= 0 && selected < cards.length) { // otherwise, a card is selected. cards.length is largely redundant since there's only one card
+            ctx.fillRect(cards[selected].x - 5 * cards[selected].scale, cards[selected].y - 5 * cards[selected].scale,
+                90 * cards[selected].scale, 130 * cards[selected].scale);
         }
 
         // draw the menu elements
-        for (let i = 0; i<buttons.length; i++){
+        for (let i = 0; i < buttons.length; i++) {
             ctx.fillStyle = buttons[i].display.color;
-            ctx.fillRect(buttons[i].x, buttons[i].y, buttons[i].width, buttons[i].height);  
+            ctx.fillRect(buttons[i].x, buttons[i].y, buttons[i].width, buttons[i].height);
             ctx.font = buttons[i].display.font;
             ctx.fillStyle = buttons[i].display.textColor;
-            ctx.fillText(buttons[i].display.text, 
+            ctx.fillText(buttons[i].display.text,
                 buttons[i].x + buttons[i].display.textX, buttons[i].y + buttons[i].display.textY);
         }
-        
-        for (let i = 0; i < cards.length; i++) {
+
+        for (let i = 0; i < cards.length; i++) { // a loop here is redundant since there's only one card
             drawCard(cards[i].x, cards[i].y, cards[i].symbols, 1.5);
         }
 
@@ -294,19 +373,74 @@ function drawScene() {
             if (lastPick.score == 1) {
                 ctx.fillText("Rule MATCHED by Card:", 70, 820);
                 drawCard(420, 770, lastPick.card, 0.5);
-            } else if (lastPick.score == 0){
+            } else if (lastPick.score == 0) {
                 ctx.fillText("Rule VIOLATED by Card:", 70, 820);
                 drawCard(420, 770, lastPick.card, 0.5);
-            } else if (lastPick.score == -1){
+            } else if (lastPick.score == -1) {
                 ctx.fillText("ERROR: Empty Card is Invalid.", 70, 820);
-            }    
+            }
         }
-    } else if (gameState == "game over") { // game over
+
+    } else if (gameState == "testing") {
+        // halo around selected card or button
+        ctx.fillStyle = "blue";
+        if (selected > 900) { // selected > 900 means a button is selected.
+            let thisWork; thisWork = selected - 901; // I am losing my mind
+            ctx.fillRect(buttons[thisWork].x - 5, buttons[thisWork].y - 5, buttons[thisWork].width + 10, buttons[thisWork].height + 10);
+        }
+        else if (selected >= 0 && selected < cards.length) { // otherwise, a card is selected. cards.length is largely redundant since there's only one card
+            ctx.fillRect(cards[selected].x - 5 * cards[selected].scale, cards[selected].y - 5 * cards[selected].scale,
+                90 * cards[selected].scale, 130 * cards[selected].scale);
+        }
+
+        // draw the menu elements
+        for (let i = 0; i < buttons.length; i++) {
+            ctx.fillStyle = buttons[i].display.color;
+            ctx.fillRect(buttons[i].x, buttons[i].y, buttons[i].width, buttons[i].height);
+            ctx.font = buttons[i].display.font;
+            ctx.fillStyle = buttons[i].display.textColor;
+            ctx.fillText(buttons[i].display.text,
+                buttons[i].x + buttons[i].display.textX, buttons[i].y + buttons[i].display.textY);
+        }
+
+        // draw the central card
+        for (let i = 0; i < cards.length; i++) { // a loop here is redundant since there's only one card
+            drawCard(cards[i].x, cards[i].y, cards[i].symbols, 1.5);
+        }
+
+        ctx.restore();
+        if (lastPick != null) {
+            if (lastPick.value == 1) {
+                ctx.fillText("Rule MATCHED by Card:", 70, 720);
+                drawCard(420, 680, lastPick.card, 0.5);
+            } else if (lastPick.value == 0) {
+                ctx.fillText("Rule VIOLATED by Card:", 70, 720);
+                drawCard(420, 680, lastPick.card, 0.5);
+            } 
+            if (lastPick.truth == 1) {
+                ctx.fillText("You were right! + " + lastPick.score + " points!" , 70, 780);
+            } else {
+                ctx.fillText("Sorry, that wasn't right." , 100, 780);
+            }
+        }
+        ctx.font = '36px serif';
+        ctx.fillStyle = "gold";
+        ctx.fillText("Score: " + score, 175, 150);
+        ctx.fillStyle = "black";
+
+        
+        // ctx.fillText("Score: " + score, 190, 880);
+        ctx.fillText("Turns taken: " + turns, 140, 900);
+        ctx.font = '24px serif'
+
+    }
+    else if (gameState == "game over") { // game over
         ctx.font = '48px serif'
         ctx.fillText("Game Over", 120, 400);
         // ctx.fillText("Score: " + score, 120, 450);
         // console.log("drawing gameover screen");
     }
+    ctx.restore();
 }
 
 function drawMenuElement(x, y, text) { // probably redundant at this point
@@ -406,16 +540,15 @@ function selectCard(i) {
         lastPick = {
             card: cards[i].symbols, //should be symbols not card but I'm too lazy to change it
             score: getScore(cards[i])
-        } 
+        }
         pickHistory.push(lastPick);
-        score += lastPick.score;
-        cards[i].symbols = []; 
+        cards[i].symbols = [];
         console.log("last pick: " + lastPick);
         turns++;
     } else {
         console.log("what have you done");
     }
-    
+
     if (i == 15) {
         cards = [];
         for (let j = 0; j < 15; j++) {
@@ -425,11 +558,12 @@ function selectCard(i) {
     }
 }
 
-function pushButton(button){
-    switch(button.name){
+function pushButton(button) {
+    switch (button.name) {
         case "reroll": //more redundant code
             cards = [];
-            for (let j = 0; j < 15; j++) {``
+            for (let j = 0; j < 15; j++) {
+                ``
                 cards.push(createCard(j));
             }
             break;
@@ -437,10 +571,46 @@ function pushButton(button){
             cards[0].symbols = [];
             break;
         case "add shape":
-            if(cards[0].symbols.length < 6){
+            if (cards[0].symbols.length < 6) {
                 cards[0].symbols.push(button.display.text); // this is so fucking stupid
                 console.log(button.display.text);
             }
+            break;
+        case "lead":
+            let temp1 = 1 - getScore(cards[0]);
+            scoreMultiplier *= temp1;
+            score += scoreMultiplier;
+            lastPick = {
+                card: cards[0].symbols,
+                value: getScore(cards[0]),
+                score: scoreMultiplier,
+                truth: temp1
+            }
+            cards[0] = createCard();
+            scoreMultiplier++;
+            turns ++;
+            break;
+
+        case "gold":
+            let temp2 = getScore(cards[0]);
+            scoreMultiplier *= temp2;
+            score += scoreMultiplier;
+            lastPick = {
+                card: cards[0].symbols,
+                value: getScore(cards[0]),
+                score: scoreMultiplier,
+                truth: temp2
+            }
+            cards[0] = createCard();
+            scoreMultiplier++;
+            turns ++;
+            break;
+
+        case "test":
+            switchState("testing");
+            break;
+        case "stopTest":
+            switchState("discovery");
             break;
         default:
             console.log("invalidButton:" + button)
@@ -454,20 +624,22 @@ function handleClick(input) {
     let y = posn.y;
     console.log("logged mouse move at x=" + x + ", y=" + y);
 
-    if (gameState == "sampling") {
+    if (gameState == "discovery" || gameState == "testing") {
         let dX; let dY;
-        for (let i = 0; i < cards.length; i++) {
-            dX = x - cards[i].x;
-            dY = y - cards[i].y;
-            /* if (i == 0) {
-                console.log("relative position to card " + i + ": (" + dX + "," + dY + ").");
-            } */
-            if (dX > 0 && dX < 80*cards[i].scale && dY > 0 && dY < 120*cards[i].scale) {
-                console.log("card " + i + " selected");
-                selectCard(i)
+        if (gameState == "discovery") {
+            for (let i = 0; i < cards.length; i++) {
+                dX = x - cards[i].x;
+                dY = y - cards[i].y;
+                /* if (i == 0) {
+                    console.log("relative position to card " + i + ": (" + dX + "," + dY + ").");
+                } */
+                if (dX > 0 && dX < 80 * cards[i].scale && dY > 0 && dY < 120 * cards[i].scale) {
+                    console.log("card " + i + " selected");
+                    selectCard(i)
+                }
             }
         }
-        for (let i=0; i<buttons.length; i++){
+        for (let i = 0; i < buttons.length; i++) {
             dX = x - buttons[i].x;
             dY = y - buttons[i].y;
             // console.log("yaba daba dooooo: " + dX + " " + dY);
@@ -487,20 +659,22 @@ function handleMouseDown(input) { // sets value of selected to create shiny blue
     let y = posn.y;
     // console.log("logged mouse move at x=" + x + ", y=" + y);
 
-    if (gameState == "sampling") {
-        let dX; let dY; 
-        for (let i = 0; i < cards.length; i++) {
-            dX = x - cards[i].x;
-            dY = y - cards[i].y;
-            /* if (i == 0) {
-                console.log("relative position to card " + i + ": (" + dX + "," + dY + ").");
-            } */
-            if (dX > 0 && dX < 80*cards[i].scale && dY > 0 && dY < 120*cards[i].scale) {
-                selected = i;
-                return;
+    if (gameState == "discovery" || gameState == "testing") {
+        let dX; let dY;
+        if (gameState == "discovery") {
+            for (let i = 0; i < cards.length; i++) {
+                dX = x - cards[i].x;
+                dY = y - cards[i].y;
+                /* if (i == 0) {
+                    console.log("relative position to card " + i + ": (" + dX + "," + dY + ").");
+                } */
+                if (dX > 0 && dX < 80 * cards[i].scale && dY > 0 && dY < 120 * cards[i].scale) {
+                    selected = i;
+                    return;
+                }
             }
         }
-        for (let i=0; i<buttons.length; i++){
+        for (let i = 0; i < buttons.length; i++) {
             dX = x - buttons[i].x;
             dY = y - buttons[i].y;
             // console.log("yaba daba dooooo: " + dX + " " + dY);
@@ -525,7 +699,7 @@ function keyDownHandler(key) {
         console.log("game over");
     } */
     logic.oldSelected = selected;
-    if (gameState == "sampling") {
+    if (gameState == "discovery") {
         switch (key.keyCode) {
             case 37: // left
                 selected--;
@@ -609,8 +783,7 @@ function init() {
         y: 435
     })
     ctx.clearRect(0, 0, 540, 960);
-    gameState = "sampling";
-    updateButtons(); // fetch button list for current gamestate;
+    switchState("discovery");
 
     newFrame();
 

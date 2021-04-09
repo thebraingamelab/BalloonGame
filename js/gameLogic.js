@@ -3,11 +3,11 @@
 ////////////// 
 let logic = { // "config" variables used in backround rng
     shapes: ["square", "diamond", "circle", "triangle", "star", "bolt"],
-    quantityRule: [4],
+    quantityRule: [1,2,3,3,4,4,5,5,6],
     oldSelected: 0
 }
 
-function createCard(i) { // a card is a list of symbols 
+function createCard() { // a card is a list of symbols 
     let symbols = [];
     let count = logic.quantityRule[randomInt(0, logic.quantityRule.length - 1)]
     for (let i = 0; i < count; i++) {
@@ -16,8 +16,11 @@ function createCard(i) { // a card is a list of symbols
 
     return {
         symbols: symbols,
-        x: 20 + (100 * i % 500),
-        y: 200 + 160 * Math.floor(i / 5)
+        scale: 1.5,
+        x: 200,
+        y: 435
+        // x: 20 + (100 * i % 500),
+        // y: 200 + 160 * Math.floor(i / 5)
     }
 }
 
@@ -153,7 +156,7 @@ function YesAndNo(){
     }
 }
 
-function nPresent(){
+function nOfShapePresent(){
     scoringTemplate = "includeExclude"
     let n = randomInt(1,5);
     let rules = [];
@@ -215,6 +218,25 @@ function createSizeRule(){
     }
 }
 
+function createSubsetRule(){
+    scoringTemplate = "includeExclude";
+    let tempArray = logic.shapes;
+    shuffleArray(tempArray);
+    symbols = tempArray.slice(0,randomInt(1,5));
+    return [{
+        yes: symbols,
+        no: "thisFixIsStupid",
+    }]
+}
+
+function adjacencyRule(){
+    scoringTemplate = "adjacency"
+    let invert = (randomInt(0,1) == 1);
+    return {
+        invert: invert
+    }
+}
+
 
 /* function getScore(card) {
     let value = 0;
@@ -227,7 +249,7 @@ function createSizeRule(){
 } */
 
 function randomRule(){
-    rand = randomInt(1,8);
+    rand = randomInt(1,10);
     switch (rand){
         case 1: return createSizeRule();
         case 2: return createEasyIncludeExclude(randomInt(1,2) == 1);
@@ -236,7 +258,9 @@ function randomRule(){
         case 5: return createPositionalRule(true);
         case 6: return createDuplicateRule();
         case 7: return createHardIncludeExclude("medium");
-        case 8: return nPresent();
+        case 8: return nOfShapePresent();
+        case 9: return createSubsetRule();
+        case 10: return adjacencyRule();
     }
 }
 
@@ -274,6 +298,12 @@ function getScore(card) {
                 }
             } else {
                 if(card.symbols.length <= scoringRules.size){
+                    return (true != scoringRules.invert);
+                }
+            } return (false != scoringRules.invert);
+        case "adjacency":
+            for (let i=0; i+1<card.symbols.length; i++){
+                if (card.symbols[i] == card.symbols[i+1]){
                     return (true != scoringRules.invert);
                 }
             } return (false != scoringRules.invert);
