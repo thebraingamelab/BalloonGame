@@ -29,6 +29,10 @@ let template = (function() {
         reportBtn: document.getElementById("report-a-bug"),
         tutorialBtn: document.getElementById("tutorial"),
 
+        // aAaAAAaAAaaAAAaAAAAA
+        tutorialMenu: document.getElementById("tutorial-menu"),
+        tutorialBackBtn: document.getElementById("tutorial-back"),
+
         // Not implemented menu elements
         notImplementedMenu: document.getElementById("not-implemented-menu"),
         notImplementedBackBtn: document.getElementById("not-implemented-back"),
@@ -68,7 +72,8 @@ let template = (function() {
 
             HTML.helpBtn.addEventListener("click", function() { _showMenu(HTML.helpMenu); }, false);
             HTML.reportBtn.addEventListener("click", _helpToNotImplemented, false);
-            HTML.tutorialBtn.addEventListener("click", _helpToNotImplemented, false);
+            HTML.tutorialBtn.addEventListener("click", _helpToTutorial, false); // arr yarr harhar
+            HTML.tutorialBackBtn.addEventListener("click", _tutorialToHelp);
             HTML.helpBackBtn.addEventListener("click", function() { _switchMenu(HTML.helpMenu, HTML.pauseMenu); }, false);
 
             HTML.notImplementedBackBtn.addEventListener("click", function() { _switchMenu(HTML.notImplementedMenu, HTML.pauseMenu); }, false);
@@ -82,6 +87,17 @@ let template = (function() {
     function _helpToNotImplemented() {
         _switchMenu(HTML.helpMenu, HTML.notImplementedMenu);
     }
+
+    // What do you think it does?
+    function _helpToTutorial() {
+        _switchMenu(HTML.helpMenu, HTML.tutorialMenu);
+    }
+
+    // if Mat is short for Matthew why isn't Rat short for Ratthew
+    function _tutorialToHelp() {
+        _switchMenu (HTML.tutorialMenu, HTML.helpMenu);
+    }
+
 
     // Specifically switches from pause menu to not implemented menu
     function _pauseToNotImplemented() {
@@ -103,6 +119,7 @@ let template = (function() {
 
         // Hide the top bar
         HTML.topBar.style.display = "none";
+        _pause();
     }
 
     // Animates a menu to pop in and stay invisible
@@ -127,6 +144,7 @@ let template = (function() {
 
         // Show the top bar
         HTML.topBar.style.display = "block";
+        _unpause();
     }
 
     // Animates the current menu to pop in and stay invisible, while the

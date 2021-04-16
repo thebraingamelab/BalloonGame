@@ -258,6 +258,22 @@
     height: 14%;
 }
 
+
+/* society */
+#tutorial-menu .menu-button {
+    height: 7%;
+}
+
+#tutorial-menu {
+    height: 85%;
+    width: 65%;
+}
+
+#tutorial-menu > div > p {
+    margin-bottom: 0.3cm;
+    font-size: 13px;
+}
+
 /* The "HELP" banner on the menu */
 /*********************************/
 #help-menu-label {

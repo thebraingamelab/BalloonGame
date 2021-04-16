@@ -619,6 +619,9 @@ function pushButton(button) {
 
 
 function handleClick(input) {
+    if (template.isPaused()) {
+        return; // Descent into madness 
+    } // hahahahahahahahahaaaaaaaaaaaAaaaaa
     let posn = resizer.getRelativeEventCoords(input);
     let x = posn.x;
     let y = posn.y;
@@ -653,6 +656,9 @@ function handleClick(input) {
 
 
 function handleMouseDown(input) { // sets value of selected to create shiny blue halo. 
+    if(template.isPaused()){
+        return; // me to the void from whence I came
+    }
     mouseControls = true;
     let posn = resizer.getRelativeEventCoords(input);
     let x = posn.x;
@@ -791,6 +797,17 @@ function init() {
     console.log("scoring Rules:");
     console.log(scoringRules);
     console.log(scoringTemplate);
+
+    let hint = createCard();
+    while (getScore(hint) == false){
+        console.log("rerolling card: " + hint.symbols);
+        hint = createCard();
+    }
+    lastPick = {
+        card: hint.symbols,
+        score: getScore(hint)
+    }
+    cards[0].symbols = hint.symbols;
 }
 
 let cards = [];

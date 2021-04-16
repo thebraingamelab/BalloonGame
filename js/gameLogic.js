@@ -272,15 +272,15 @@ function getScore(card) {
         case "includeExclude":
             for (let i = 0; i < scoringRules.length; i++) {
                 if (IsSubset(scoringRules[i].yes, card.symbols) && !IsSubset(scoringRules[i].no, card.symbols)) {
-                    return 1;
+                    return true;
                 }
-            } return 0;
+            } return false;
         case "positional":
             for (let i=0; i < scoringRules.positions.length; i++){
                 if (IsSubset([card.symbols[scoringRules.positions[i]]], scoringRules.symbols)){
-                    return 1;
+                    return true;
                 } 
-            } return 0;
+            } return false;
         case "duplicate":
             for (let i=0; i<logic.shapes.length; i++){
                 let dupe = [];
