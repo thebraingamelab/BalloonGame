@@ -91,6 +91,7 @@ let gameState; //2: pre-game menu, 1: game in progress, 0: game over
 let mouseControls = true;
 let pickHistory = [];
 let buttons = [];
+let flaskContents = [];
 // const scoringRules = createLinearScoringRules();
 // var scoringRules = createVariableScoringRules();
 // scoringRules = createBanditScoringRules(12,-3,7);
@@ -111,10 +112,23 @@ function setDifficulty(dif) {
 }
 
 
+// Graphics ELements
+let star = new Image();
+let bolt = new Image();
+let flask = new Image();
+
+function loadGraphics(){
+    star.src = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.shareicon.net%2Fdata%2F2015%2F12%2F07%2F683924_star_512x512.png&f=1&nofb=1"
+    bolt.src = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fd30y9cdsu7xlg0.cloudfront.net%2Fpng%2F9601-200.png&f=1&nofb=1"
+    flask.src = "icons/flask.svg"
+}
+
 
 /////////////////////////////////////
 // Function definitions
 /////////////////////////////////////
+
+
 function updateButtons() {
     switch (gameState) {
         case "discovery": // inb4 "shouldn't this be 'discovering' since the other state is testing" 
@@ -348,18 +362,21 @@ function drawScene() {
         }
 
         // draw the menu elements
-        for (let i = 0; i < buttons.length; i++) {
+        /* for (let i = 0; i < buttons.length; i++) {
             ctx.fillStyle = buttons[i].display.color;
             ctx.fillRect(buttons[i].x, buttons[i].y, buttons[i].width, buttons[i].height);
             ctx.font = buttons[i].display.font;
             ctx.fillStyle = buttons[i].display.textColor;
             ctx.fillText(buttons[i].display.text,
                 buttons[i].x + buttons[i].display.textX, buttons[i].y + buttons[i].display.textY);
-        }
+        } */    
 
-        for (let i = 0; i < cards.length; i++) { // a loop here is redundant since there's only one card
-            drawCard(cards[i].x, cards[i].y, cards[i].symbols, 1.5);
-        }
+
+        // Draw the central card
+        // drawCard(cards[0].x, cards[0].y, cards[0].symbols, 1.5);
+
+        // "lol" said the scorpion "lmao"
+        drawFlask(260,480,flaskContents,1.9);
 
         // draw the text
         ctx.restore();
@@ -371,13 +388,14 @@ function drawScene() {
         ctx.fillText
         if (lastPick != null) {
             if (lastPick.score == 1) {
-                ctx.fillText("Rule MATCHED by Card:", 70, 820);
-                drawCard(420, 770, lastPick.card, 0.5);
+                ctx.fillText("Rule MATCHED by combination:", 70, 820);
+                drawFlask(450, 940, lastPick.card, 1);
             } else if (lastPick.score == 0) {
-                ctx.fillText("Rule VIOLATED by Card:", 70, 820);
-                drawCard(420, 770, lastPick.card, 0.5);
+                ctx.fillText("Rule VIOLATED by combination:", 70, 820);
+                drawFlask(450, 940, lastPick.card, 1);
             } else if (lastPick.score == -1) {
-                ctx.fillText("ERROR: Empty Card is Invalid.", 70, 820);
+                ctx.fillText("No reaction possible with no materials!", 16, 820);
+                drawFlask(450, 940, lastPick.card, 1);
             }
         }
 
@@ -454,8 +472,9 @@ function drawMenuElement(x, y, text) { // probably redundant at this point
     ctx.fillStyle = "blue"
     ctx.fillText(text, x + 8, y + 30);
 }
-// draws a token with top left corner (x,y), and the given scale
-function drawCard(x, y, card, scale) {
+
+// draws a card with top left corner (x,y), and the given scale
+function drawCard(x, y, card, scale) { // actually inputs a card's symbols, not the card itself
     // draw the card
     ctx.save();
     ctx.fillStyle = "grey";
@@ -524,16 +543,51 @@ function drawCard(x, y, card, scale) {
 }
 
 
+// draws a flask with bottom middle point at (x,y)
+function drawFlask(x, y, contents, sz){
+    ctx.save();
+    ctx.strokeStyle = "black";
+    
+    const TH = 70; // where the "top part" of the flask starts
+    const TW = 6 ; // twice the width of the "top" part of the flask.
+    const IS = (50-TW)/TH; // 1/slope (inverse slope)
+
+    // Draw the flask itself
+    ctx.beginPath();
+    ctx.moveTo(x-TW*sz, y-100*sz);
+    ctx.lineTo(x-TW*sz, y-TH*sz);
+    ctx.lineTo(x - 50 * sz, y);
+    ctx.lineTo(x + 50 * sz, y);
+    ctx.lineTo(x+TW*sz, y-TH*sz);
+    ctx.lineTo(x+TW*sz, y-100*sz);
+    ctx.stroke();
+
+    // fill the flask with liquids
+    for (let i=0; i<contents.length; i++){
+        ctx.fillStyle = contents[i];
+
+        ctx.beginPath();
+        ctx.moveTo(x-(50-i*IS*10)*sz,y-i*10*sz);
+        ctx.lineTo(x+(50-i*IS*10)*sz,y-i*10*sz);
+        ctx.lineTo(x+(50-(i+1)*IS*10)*sz,y-(i+1)*10*sz);
+        ctx.lineTo(x-(50-(i+1)*IS*10)*sz,y-(i+1)*10*sz);
+        ctx.lineTo(x-(50-i*IS*10)*sz,y-i*10*sz);
+        ctx.fill();
+
+    }
+    ctx.restore();
+}
+
 
 
 
 
 // window.addEventListener("keydown", keyDownHandler);
-document.addEventListener("click", handleClick);
-document.addEventListener("mousedown", handleMouseDown)
-document.addEventListener("mouseup", () => {
-    selected = -15;
-})
+// document.addEventListener("click", handleClick);
+// document.addEventListener("mousedown", handleMouseDown)
+// document.addEventListener("mouseup", () => {
+//    selected = -15;
+// })
 
 function selectCard(i) {
     if (i != 15) {
@@ -749,8 +803,7 @@ function keyDownHandler(key) {
 /////////////////////////////////////
 
 // now this is epic
-let star = new Image();
-let bolt = new Image();
+
 
 
 function newFrame() {
@@ -776,8 +829,7 @@ function newFrame() {
 }
 
 function init() {
-    star.src = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.shareicon.net%2Fdata%2F2015%2F12%2F07%2F683924_star_512x512.png&f=1&nofb=1"
-    bolt.src = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fd30y9cdsu7xlg0.cloudfront.net%2Fpng%2F9601-200.png&f=1&nofb=1"
+    loadGraphics();
     initResizer();
     /* for (let i = 0; i < 15; i++) {
         cards.push(createCard(i));

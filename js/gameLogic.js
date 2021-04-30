@@ -2,7 +2,8 @@
 // Game-specific logic
 ////////////// 
 let logic = { // "config" variables used in backround rng
-    shapes: ["square", "diamond", "circle", "triangle", "star", "bolt"],
+    shapes: ["#0e9ef5", "#ae1212", "#ce82e3", "#6df50e", "#ffe220", "#e48a2a"], // not really shapes anymore but eh
+    // blue, red, purple, green, yellow, orange
     quantityRule: [1,2,3,3,4,4,5,5,6],
     oldSelected: 0
 }
@@ -23,6 +24,7 @@ function createCard() { // a card is a list of symbols
         // y: 200 + 160 * Math.floor(i / 5)
     }
 }
+
 
 
 /* function createLinearScoringRules() {
@@ -249,18 +251,16 @@ function adjacencyRule(){
 } */
 
 function randomRule(){
-    rand = randomInt(1,10);
+    rand = randomInt(1,8);
     switch (rand){
         case 1: return createSizeRule();
         case 2: return createEasyIncludeExclude(randomInt(1,2) == 1);
         case 3: return YesAndNo();
-        case 4: return createPositionalRule(false);
-        case 5: return createPositionalRule(true);
+        case 4: return createSubsetRule();
+        case 5: return adjacencyRule();
         case 6: return createDuplicateRule();
         case 7: return createHardIncludeExclude("medium");
         case 8: return nOfShapePresent();
-        case 9: return createSubsetRule();
-        case 10: return adjacencyRule();
     }
 }
 

@@ -75,6 +75,7 @@
 
     <script src="js/gameLogic.js" defer></script>
     <script src="js/main.js" defer></script>
+    <script src="js/buttons.js" defer></script>
     <!--<script src="optional1.js" defer></script>-->
     <!--<script src="optional2.js" defer></script>-->
 </head>
@@ -82,8 +83,22 @@
 <!-- The body is selected as the game container -->
 <body id="game-container">
 
+
+    
     <!-- The div containing the canvas -->
     <div id="canvas-wrapper">
+        <img src="graphics/burner3.svg" id="burner">
+        <img src="graphics/burnerbutton.svg" id="burner-button">
+        <img src="graphics/emptybutton.svg" id="empty-button">
+
+        <img src="graphics/bluevial.svg" id="blue-vial" class="vial">
+        <img src="graphics/greenvial.svg" id="green-vial" class="vial">
+        <img src="graphics/orangevial.svg" id="orange-vial" class="vial">
+        <img src="graphics/yellowvial.svg" id="yellow-vial" class="vial">
+        <img src="graphics/redvial.svg" id="red-vial" class="vial">
+        <img src="graphics/purplevial.svg" id="purple-vial" class="vial">
+        <!-- game buttons -->
+       
 
         <!-- Big transparent box for dimming the background while in a menu -->
         <div id="dimmer"></div>
@@ -194,17 +209,13 @@
         <!-- Let's see how badly this will break things -->
         <div class="menu" id="tutorial-menu">
             <div id="not-implemented-label">
-                <p>Your goal is to discover a rule that any given card will match or violate.</p>
-                <p>To do this, you can use the 6 buttons at the top to build a card which can have anywhere from 1-6 symbols 
-                    and then click it to be told whether it matches the rule or not. From many such tests, you will try to extrapolate the rule.
-                    You are also given an initial hint in the form of a card that matches the rule. </p> 
-                <p> When you think you've discovered the rule, click the "Test Hypothesis" button. This switches to the classification phase.
-                    During the classification phase, you will be presented with cards you'll need to classify as matching or not, and you
-                    recieve points for correct classification. You get a bonus for correctly classifying many cards in a row, meaning you are
-                    inscentivised to only switch to the classification phase when you're sure you've figured it out. If you want to leave the
-                    classification phase, click the "Stop testing" Button. </p>
-                <p> Testing or classifying a card adds one to the turn counter. As of right now, there is no turn limit, but you can set your own limit
-                    and try to see, for example, how many points you can score in 100 turns.</p>
+                <p> Your goal is to discover a rule that determines which combinations of liquids will react together.</p>
+                <p> To do this, use the 6 containers on the side to add liquids to the flask, and then press the flame button on the bunsen burner to test them. 
+                    If you realize you made a mistake, you can press the "empty flask" button to clear all added liquids.</p> 
+                <p> You will also be given an intial hint in the form of a combination of liquids that is guarenteed to produce a reaction.</p>
+                <p> As of right now, there is no way to known for sure if your hypothesis is correct, but you can become reasonably certain after enough trials. </p>
+                <p> Testing a combination of liquids will advance a turn counter. As of right now, this has no effect, but you can try to see how quickly you can figure 
+                    out the rule (to a reasonable degree of certainty). </p>
                 
             </div>
             <button id="tutorial-back" class="menu-button">

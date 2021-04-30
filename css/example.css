@@ -38,3 +38,76 @@ canvas {
     top: 0;
     left: 0;
 }
+
+
+
+/* Game Buttons */
+/************************/
+#burner {
+    background-color: white;
+    font-style: italic;
+
+    z-index: 1;
+    position: absolute;
+    right: 17%;
+    top: 50%;
+    height: 28%;
+}
+
+.vial{
+    position: absolute;
+    z-index: 2;
+    height: 10%;
+}
+
+#blue-vial{
+    right: 75%;
+    top: 12%;
+}
+
+#purple-vial{
+    right: 75%;
+    top: 36%;
+}
+
+#red-vial{
+    right: 75%;
+    top: 24%;
+}
+
+#green-vial{
+    right: 10%;
+    top: 12%;
+}
+
+#yellow-vial{
+    right: 10%;
+    top: 24%;
+}
+
+#orange-vial{
+    right: 10%;
+    top: 36%;
+}
+
+#burner-button{
+    background-color: white;
+    font-style: italic;
+
+    z-index: 2;
+    position: absolute;
+    right: 18.3%;
+    top: 72.6%;
+    height: 4.5%;
+}
+
+#empty-button{
+    background-color: white;
+    font-style: italic;
+
+    z-index: 2;
+    position: absolute;
+    right: 38%;
+    top: 16%;
+    height: 5%;
+}
