@@ -1,3 +1,19 @@
+let score = 0;
+let scoreMultiplier = 1;
+let lastPick;
+let selected = -15;
+let turns = 0;
+let gameState; //2: pre-game menu, 1: game in progress, 0: game over
+let mouseControls = true;
+let pickHistory = [];
+let buttons = [];
+let flaskContents = [];
+
+let hIndex = 1;
+
+let leftArrow = document.getElementById("left-arrow");
+let rightArrow = document.getElementById("right-arrow");
+
 /////////////// 
 // Game-specific logic
 ////////////// 

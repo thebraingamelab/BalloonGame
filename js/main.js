@@ -82,16 +82,7 @@ const GAME_HEIGHT = resizer.getGameHeight();
 const margin = 10;
 let initialized = false;
 let tPrev = 0;
-let score = 0;
-let scoreMultiplier = 1;
-let lastPick;
-let selected = -15;
-let turns = 0;
-let gameState; //2: pre-game menu, 1: game in progress, 0: game over
-let mouseControls = true;
-let pickHistory = [];
-let buttons = [];
-let flaskContents = [];
+
 // const scoringRules = createLinearScoringRules();
 // var scoringRules = createVariableScoringRules();
 // scoringRules = createBanditScoringRules(12,-3,7);
@@ -113,13 +104,15 @@ function setDifficulty(dif) {
 
 
 // Graphics ELements
-let star = new Image();
+// let star = new Image();
 let bolt = new Image();
+let fire = new Image();
 let flask = new Image();
 
-function loadGraphics(){
-    star.src = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.shareicon.net%2Fdata%2F2015%2F12%2F07%2F683924_star_512x512.png&f=1&nofb=1"
-    bolt.src = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fd30y9cdsu7xlg0.cloudfront.net%2Fpng%2F9601-200.png&f=1&nofb=1"
+function loadGraphics() {
+//  star.src = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.shareicon.net%2Fdata%2F2015%2F12%2F07%2F683924_star_512x512.png&f=1&nofb=1"
+    bolt.src = "graphics/bolt.png"
+    fire.src = "graphics/fire.jpg"
     flask.src = "icons/flask.svg"
 }
 
@@ -133,194 +126,59 @@ function updateButtons() {
     switch (gameState) {
         case "discovery": // inb4 "shouldn't this be 'discovering' since the other state is testing" 
             buttons = [
-                // clear
+                // empty flask
                 {
-                    name: "clear",
-                    x: 200,
-                    y: 685,
+                    name: "empty",
+                    x: 100,
+                    y: 615,
                     width: 120,
                     height: 50,
                     display: {
-                        color: "grey",
+                        color: "#aaaaaa",
                         font: '32px serif',
-                        text: "Clear",
+                        text: "Empty",
                         textColor: "yellow",
                         textX: 12,
                         textY: 35,
-                    }
-
+                    },
                 },
 
-                // switch to testing
+                // undo
                 {
-                    name: "test",
-                    x: 140,
-                    y: 145,
-                    width: 250,
-                    height: 50,
-                    display: {
-                        color: "grey",
-                        font: '28px serif',
-                        text: "Test Hypothesis",
-                        textColor: "orange",
-                        textX: 12,
-                        textY: 35,
-                    }
-                },
-
-                // add triangle 
-                {
-                    name: "add shape",
-                    x: 50,
-                    y: 245,
+                    name: "undo",
+                    x: 300,
+                    y: 615,
                     width: 120,
                     height: 50,
                     display: {
-                        color: "grey",
-                        font: '28px serif',
-                        text: "triangle",
-                        textColor: "yellow",
-                        textX: 3,
-                        textY: 35,
-                    }
-                },
-
-                // add circle 
-                {
-                    name: "add shape",
-                    x: 200,
-                    y: 245,
-                    width: 120,
-                    height: 50,
-                    display: {
-                        color: "grey",
-                        font: '28px serif',
-                        text: "square",
-                        textColor: "yellow",
-                        textX: 9,
-                        textY: 33,
-                    }
-                },
-
-                // add square 
-                {
-                    name: "add shape",
-                    x: 350,
-                    y: 245,
-                    width: 120,
-                    height: 50,
-                    display: {
-                        color: "grey",
-                        font: '28px serif',
-                        text: "circle",
+                        color: "#aaaaaa",
+                        font: '32px serif',
+                        text: "Undo",
                         textColor: "yellow",
                         textX: 12,
-                        textY: 33,
-                    }
+                        textY: 35,
+                    },
                 },
 
-                // add bolt 
                 {
-                    name: "add shape",
-                    x: 50,
-                    y: 315,
-                    width: 120,
-                    height: 50,
+                    name: "mix",
+                    x: 160,
+                    y: 530,
+                    width: 200,
+                    height: 60,
                     display: {
-                        color: "grey",
-                        font: '28px serif',
-                        text: "bolt",
+                        color: "#444444",
+                        font: '48px serif',
+                        text: "MIX!",
                         textColor: "yellow",
-                        textX: 25,
-                        textY: 33,
-                    }
-                },
-
-                // add diamond 
-                {
-                    name: "add shape",
-                    x: 200,
-                    y: 315,
-                    width: 120,
-                    height: 50,
-                    display: {
-                        color: "grey",
-                        font: '28px serif',
-                        text: "diamond",
-                        textColor: "yellow",
-                        textX: 0,
-                        textY: 33,
-                    }
-                },
-
-                // add star 
-                {
-                    name: "add shape",
-                    x: 350,
-                    y: 315,
-                    width: 120,
-                    height: 50,
-                    display: {
-                        color: "grey",
-                        font: '28px serif',
-                        text: "star",
-                        textColor: "yellow",
-                        textX: 25,
-                        textY: 33,
-                    }
-                },
+                        textX: 40,
+                        textY: 45,
+                    },
+                }
             ]
             break;
         case "testing":
             buttons = [
-                {
-                    name: "lead",
-                    x: 50,
-                    y: 345,
-                    width: 120,
-                    height: 50,
-                    display: {
-                        color: "grey",
-                        font: '26px serif',
-                        text: "Violates",
-                        textColor: "purple",
-                        textX: 3,
-                        textY: 35,
-                    }
-                },
-
-                // add circle 
-                {
-                    name: "gold",
-                    x: 350,
-                    y: 345,
-                    width: 120,
-                    height: 50,
-                    display: {
-                        color: "grey",
-                        font: '26px serif',
-                        text: "Matches",
-                        textColor: "gold",
-                        textX: 5,
-                        textY: 35,
-                    }
-                },
-
-                {
-                    name: "stopTest",
-                    x: 140,
-                    y: 225,
-                    width: 250,
-                    height: 50,
-                    display: {
-                        color: "grey",
-                        font: '32px serif',
-                        text: "Stop Testing",
-                        textColor: "orange",
-                        textX: 24,
-                        textY: 35,
-                    }
-                },
             ]
             break;
         default:
@@ -333,7 +191,7 @@ function switchState(state) {
     updateButtons();
     if (gameState == "testing") {
         cards[0] = createCard();
-    } else if (gameState == "discovery"){
+    } else if (gameState == "discovery") {
         cards[0].symbols = [];
     }
 }
@@ -361,22 +219,39 @@ function drawScene() {
                 90 * cards[selected].scale, 130 * cards[selected].scale);
         }
 
-        // draw the menu elements
-        /* for (let i = 0; i < buttons.length; i++) {
+        // draw the buttons
+        for (let i = 0; i < buttons.length; i++) {
             ctx.fillStyle = buttons[i].display.color;
             ctx.fillRect(buttons[i].x, buttons[i].y, buttons[i].width, buttons[i].height);
             ctx.font = buttons[i].display.font;
             ctx.fillStyle = buttons[i].display.textColor;
             ctx.fillText(buttons[i].display.text,
                 buttons[i].x + buttons[i].display.textX, buttons[i].y + buttons[i].display.textY);
-        } */    
-
-
-        // Draw the central card
-        // drawCard(cards[0].x, cards[0].y, cards[0].symbols, 1.5);
+        }
 
         // "lol" said the scorpion "lmao"
-        drawFlask(260,480,flaskContents,1.9);
+        drawFlask(260, 480, flaskContents, 1.9);
+
+
+        // Draw the pick history box and text
+        ctx.strokeRect(115, 160, 310, 70);
+        ctx.font = '24px serif';
+        ctx.fillStyle = "black";
+        ctx.fillText("Pick History:", 120, 155);
+        ctx.fillText("(fire indicates reaction)", 115, 250)
+
+        // Draw the pick history
+        for(let i=hIndex; i<5+hIndex; i++){
+            if(pickHistory.length - i >= 0){
+                drawFlask(150+60*(i-hIndex), 220, pickHistory[pickHistory.length - i].card, 0.5)
+                if(pickHistory[pickHistory.length - i].score == 1){
+                    ctx.drawImage(fire, 160+60*(i-hIndex), 170, 14, 20);
+                }
+            }
+        }
+        // possibly show/hide left and right arrows. 
+
+
 
         // draw the text
         ctx.restore();
@@ -388,15 +263,14 @@ function drawScene() {
         ctx.fillText
         if (lastPick != null) {
             if (lastPick.score == 1) {
-                ctx.fillText("Rule MATCHED by combination:", 70, 820);
-                drawFlask(450, 940, lastPick.card, 1);
+                ctx.fillText("REACTION caused by combination:", 50, 720);
+                
             } else if (lastPick.score == 0) {
-                ctx.fillText("Rule VIOLATED by combination:", 70, 820);
-                drawFlask(450, 940, lastPick.card, 1);
+                ctx.fillText("Combination below DID NOT react:", 50, 720);
             } else if (lastPick.score == -1) {
-                ctx.fillText("No reaction possible with no materials!", 16, 820);
-                drawFlask(450, 940, lastPick.card, 1);
+                ctx.fillText("No reaction possible with no materials!", 16, 720);
             }
+            drawFlask(260, 840, lastPick.card, 1);
         }
 
     } else if (gameState == "testing") {
@@ -434,11 +308,11 @@ function drawScene() {
             } else if (lastPick.value == 0) {
                 ctx.fillText("Rule VIOLATED by Card:", 70, 720);
                 drawCard(420, 680, lastPick.card, 0.5);
-            } 
+            }
             if (lastPick.truth == 1) {
-                ctx.fillText("You were right! + " + lastPick.score + " points!" , 70, 780);
+                ctx.fillText("You were right! + " + lastPick.score + " points!", 70, 780);
             } else {
-                ctx.fillText("Sorry, that wasn't right." , 100, 780);
+                ctx.fillText("Sorry, that wasn't right.", 100, 780);
             }
         }
         ctx.font = '36px serif';
@@ -446,7 +320,7 @@ function drawScene() {
         ctx.fillText("Score: " + score, 175, 150);
         ctx.fillStyle = "black";
 
-        
+
         // ctx.fillText("Score: " + score, 190, 880);
         ctx.fillText("Turns taken: " + turns, 140, 900);
         ctx.font = '24px serif'
@@ -544,34 +418,34 @@ function drawCard(x, y, card, scale) { // actually inputs a card's symbols, not 
 
 
 // draws a flask with bottom middle point at (x,y)
-function drawFlask(x, y, contents, sz){
+function drawFlask(x, y, contents, sz) {
     ctx.save();
     ctx.strokeStyle = "black";
-    
+
     const TH = 70; // where the "top part" of the flask starts
-    const TW = 6 ; // twice the width of the "top" part of the flask.
-    const IS = (50-TW)/TH; // 1/slope (inverse slope)
+    const TW = 6; // twice the width of the "top" part of the flask.
+    const IS = (50 - TW) / TH; // 1/slope (inverse slope)
 
     // Draw the flask itself
     ctx.beginPath();
-    ctx.moveTo(x-TW*sz, y-100*sz);
-    ctx.lineTo(x-TW*sz, y-TH*sz);
+    ctx.moveTo(x - TW * sz, y - 100 * sz);
+    ctx.lineTo(x - TW * sz, y - TH * sz);
     ctx.lineTo(x - 50 * sz, y);
     ctx.lineTo(x + 50 * sz, y);
-    ctx.lineTo(x+TW*sz, y-TH*sz);
-    ctx.lineTo(x+TW*sz, y-100*sz);
+    ctx.lineTo(x + TW * sz, y - TH * sz);
+    ctx.lineTo(x + TW * sz, y - 100 * sz);
     ctx.stroke();
 
     // fill the flask with liquids
-    for (let i=0; i<contents.length; i++){
+    for (let i = 0; i < contents.length; i++) {
         ctx.fillStyle = contents[i];
 
         ctx.beginPath();
-        ctx.moveTo(x-(50-i*IS*10)*sz,y-i*10*sz);
-        ctx.lineTo(x+(50-i*IS*10)*sz,y-i*10*sz);
-        ctx.lineTo(x+(50-(i+1)*IS*10)*sz,y-(i+1)*10*sz);
-        ctx.lineTo(x-(50-(i+1)*IS*10)*sz,y-(i+1)*10*sz);
-        ctx.lineTo(x-(50-i*IS*10)*sz,y-i*10*sz);
+        ctx.moveTo(x - (50 - i * IS * 10) * sz, y - i * 10 * sz);
+        ctx.lineTo(x + (50 - i * IS * 10) * sz, y - i * 10 * sz);
+        ctx.lineTo(x + (50 - (i + 1) * IS * 10) * sz, y - (i + 1) * 10 * sz);
+        ctx.lineTo(x - (50 - (i + 1) * IS * 10) * sz, y - (i + 1) * 10 * sz);
+        ctx.lineTo(x - (50 - i * IS * 10) * sz, y - i * 10 * sz);
         ctx.fill();
 
     }
@@ -583,11 +457,11 @@ function drawFlask(x, y, contents, sz){
 
 
 // window.addEventListener("keydown", keyDownHandler);
-// document.addEventListener("click", handleClick);
-// document.addEventListener("mousedown", handleMouseDown)
-// document.addEventListener("mouseup", () => {
-//    selected = -15;
-// })
+document.addEventListener("click", handleClick);
+document.addEventListener("mousedown", handleMouseDown)
+document.addEventListener("mouseup", () => {
+    selected = -15;
+})
 
 function selectCard(i) {
     if (i != 15) {
@@ -612,64 +486,6 @@ function selectCard(i) {
     }
 }
 
-function pushButton(button) {
-    switch (button.name) {
-        case "reroll": //more redundant code
-            cards = [];
-            for (let j = 0; j < 15; j++) {
-                ``
-                cards.push(createCard(j));
-            }
-            break;
-        case "clear":
-            cards[0].symbols = [];
-            break;
-        case "add shape":
-            if (cards[0].symbols.length < 6) {
-                cards[0].symbols.push(button.display.text); // this is so fucking stupid
-                console.log(button.display.text);
-            }
-            break;
-        case "lead":
-            let temp1 = 1 - getScore(cards[0]);
-            scoreMultiplier *= temp1;
-            score += scoreMultiplier;
-            lastPick = {
-                card: cards[0].symbols,
-                value: getScore(cards[0]),
-                score: scoreMultiplier,
-                truth: temp1
-            }
-            cards[0] = createCard();
-            scoreMultiplier++;
-            turns ++;
-            break;
-
-        case "gold":
-            let temp2 = getScore(cards[0]);
-            scoreMultiplier *= temp2;
-            score += scoreMultiplier;
-            lastPick = {
-                card: cards[0].symbols,
-                value: getScore(cards[0]),
-                score: scoreMultiplier,
-                truth: temp2
-            }
-            cards[0] = createCard();
-            scoreMultiplier++;
-            turns ++;
-            break;
-
-        case "test":
-            switchState("testing");
-            break;
-        case "stopTest":
-            switchState("discovery");
-            break;
-        default:
-            console.log("invalidButton:" + button)
-    }
-}
 
 
 function handleClick(input) {
@@ -683,19 +499,19 @@ function handleClick(input) {
 
     if (gameState == "discovery" || gameState == "testing") {
         let dX; let dY;
-        if (gameState == "discovery") {
-            for (let i = 0; i < cards.length; i++) {
+        /* if (gameState == "discovery") {
+             for (let i = 0; i < cards.length; i++) {
                 dX = x - cards[i].x;
                 dY = y - cards[i].y;
                 /* if (i == 0) {
                     console.log("relative position to card " + i + ": (" + dX + "," + dY + ").");
-                } */
+                } 
                 if (dX > 0 && dX < 80 * cards[i].scale && dY > 0 && dY < 120 * cards[i].scale) {
                     console.log("card " + i + " selected");
                     selectCard(i)
                 }
-            }
-        }
+            } 
+        } */
         for (let i = 0; i < buttons.length; i++) {
             dX = x - buttons[i].x;
             dY = y - buttons[i].y;
@@ -710,7 +526,7 @@ function handleClick(input) {
 
 
 function handleMouseDown(input) { // sets value of selected to create shiny blue halo. 
-    if(template.isPaused()){
+    if (template.isPaused()) {
         return; // me to the void from whence I came
     }
     mouseControls = true;
@@ -721,19 +537,19 @@ function handleMouseDown(input) { // sets value of selected to create shiny blue
 
     if (gameState == "discovery" || gameState == "testing") {
         let dX; let dY;
-        if (gameState == "discovery") {
+        /* if (gameState == "discovery") {
             for (let i = 0; i < cards.length; i++) {
                 dX = x - cards[i].x;
                 dY = y - cards[i].y;
                 /* if (i == 0) {
                     console.log("relative position to card " + i + ": (" + dX + "," + dY + ").");
-                } */
+                } 
                 if (dX > 0 && dX < 80 * cards[i].scale && dY > 0 && dY < 120 * cards[i].scale) {
                     selected = i;
                     return;
                 }
             }
-        }
+        } */
         for (let i = 0; i < buttons.length; i++) {
             dX = x - buttons[i].x;
             dY = y - buttons[i].y;
@@ -851,7 +667,7 @@ function init() {
     console.log(scoringTemplate);
 
     let hint = createCard();
-    while (getScore(hint) == false){
+    while (getScore(hint) == false) {
         console.log("rerolling card: " + hint.symbols);
         hint = createCard();
     }
@@ -859,6 +675,7 @@ function init() {
         card: hint.symbols,
         score: getScore(hint)
     }
+    pickHistory.push(lastPick)
     cards[0].symbols = hint.symbols;
 }
 
