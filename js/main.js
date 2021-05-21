@@ -87,7 +87,7 @@ let tPrev = 0;
 // var scoringRules = createVariableScoringRules();
 // scoringRules = createBanditScoringRules(12,-3,7);
 var scoringTemplate;
-var scoringRules = randomRule();
+var scoringRules = createScoringRule();
 /* var scoringRules = createHardIncludeExclude("easy");
 scoringRules = createEasyIncludeExclude(false);
 scoringRules = createPositionalRule(true);
@@ -234,18 +234,18 @@ function drawScene() {
 
 
         // Draw the pick history box and text
-        ctx.strokeRect(115, 160, 310, 70);
+        ctx.strokeRect(105, 150, 330, 80);
         ctx.font = '24px serif';
         ctx.fillStyle = "black";
-        ctx.fillText("Pick History:", 120, 155);
+        ctx.fillText("Pick History:", 120, 145);
         ctx.fillText("(fire indicates reaction)", 115, 250)
 
         // Draw the pick history
         for(let i=hIndex; i<5+hIndex; i++){
             if(pickHistory.length - i >= 0){
-                drawFlask(150+60*(i-hIndex), 220, pickHistory[pickHistory.length - i].card, 0.5)
+                drawFlask(140+65*(i-hIndex), 220, pickHistory[pickHistory.length - i].card, 0.6)
                 if(pickHistory[pickHistory.length - i].score == 1){
-                    ctx.drawImage(fire, 160+60*(i-hIndex), 170, 14, 20);
+                    ctx.drawImage(fire, 152+65*(i-hIndex), 165, 14, 20);
                 }
             }
         }
@@ -667,13 +667,13 @@ function init() {
     console.log(scoringTemplate);
 
     let hint = createCard();
-    while (getScore(hint) == false) {
+    while (checkCombination(hint.symbols) == false) {
         console.log("rerolling card: " + hint.symbols);
         hint = createCard();
     }
     lastPick = {
         card: hint.symbols,
-        score: getScore(hint)
+        score: checkCombination(hint.symbols)
     }
     pickHistory.push(lastPick)
     cards[0].symbols = hint.symbols;

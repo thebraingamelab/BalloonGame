@@ -10,6 +10,7 @@ let greenVial = document.getElementById("green-vial").onclick = function() {addM
 
 // Other buttons
 
+
 leftArrow.onclick = function() {cycleHistory(-1)}; 
 rightArrow.onclick = function() {cycleHistory(1)};
 leftArrow.style.display = "none";
@@ -42,7 +43,7 @@ function addMaterial(material){
 function burnContents(){
     lastPick = {
         card: flaskContents, //should be symbols not card but I'm too lazy to change it
-        score: getScore({symbols: flaskContents}) // formatting it like this because... actually I don't even know anymore    
+        score: checkCombination(flaskContents) // formatting it like this because... actually I don't even know anymore    
     }
     flaskContents = []
     console.log("last pick: " + lastPick);
