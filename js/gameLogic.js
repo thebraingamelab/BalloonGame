@@ -97,12 +97,44 @@ function checkCombination(stuff){
             return (checkAtomicRule(rule1) && !checkAtomicRule(rule2));
             break;
         case "xor":
-            return !(checkAtomicRule(rule1) == !checkAtomicRule(rule2));
+            return !(checkAtomicRule(rule1) == checkAtomicRule(rule2));
             break;
         default:
             console.log("ERROR: " + scoringRules.conjunction + " is not a valid rule");
             return false;
     }
+}
+
+function generateHint(){
+    let hint = [];
+    for (let i=0; i<20; i++){
+        hint = [];
+        // initialize hint so it satisfies the first rule
+        for (let j=0; j<scoringRules.atomicRules[0].parameters.length; j++){ 
+            hint.push(scoringRules.atomicRules[0].parameters[j]);
+        }
+        // fill the rest of the hint randomly
+        const k = 6 - hint.length;
+        for (let j=0; j<k; j++){
+            let n = randomInt(1,6);
+            if (n!=6){ // uniformly fill the rest of the "slots" in the hint with either a random color or nothing
+                hint.push(logic.colors[n])
+            }
+        }
+        if (checkCombination(hint)){
+            shuffleArray(hint);
+            return hint;
+        } else {
+            console.log("rerolling combination " + hint);
+        }
+    }
+    console.log("no valid hint found for following rules:");
+    console.log(scoringRules);
+    scoringRules = createScoringRule();
+    console.log("new scoring rules generated:");
+    console.log(scoringRules);
+    console.log("attempting to generate new hint.");
+    return generateHint();
 }
 
 

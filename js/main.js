@@ -666,14 +666,10 @@ function init() {
     console.log(scoringRules);
     console.log(scoringTemplate);
 
-    let hint = createCard();
-    while (checkCombination(hint.symbols) == false) {
-        console.log("rerolling card: " + hint.symbols);
-        hint = createCard();
-    }
+    let hint = generateHint();
     lastPick = {
-        card: hint.symbols,
-        score: checkCombination(hint.symbols)
+        card: hint,
+        score: checkCombination(hint)
     }
     pickHistory.push(lastPick)
     cards[0].symbols = hint.symbols;
