@@ -89,14 +89,17 @@ function pushButton(button) {
                 return;
             }
             if (checkCombination(classificationSet[selectedFlask])){
-                score+=5;
+                score +=5;
+                maxScore +=5;
+
                 lastPick = {
                     feedback: "CORRECT",
                     reacts: true
                 }
-                
-
             } else {
+                score --; 
+                maxScore ++;
+
                 lastPick = {
                     feedback: "INCORRECT",
                     reacts: false
@@ -110,12 +113,15 @@ function pushButton(button) {
                 return;
             }
             if (checkCombination(classificationSet[selectedFlask])){
-                score --; 
+                score --;
+                maxScore +=5;
                 lastPick = {
                     feedback: "INCORRECT",
                     reacts: true
                 }
             } else {
+                score ++;
+                maxScore ++;
                 lastPick = {
                     feedback: "CORRECT",
                     reacts: false

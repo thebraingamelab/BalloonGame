@@ -259,6 +259,18 @@ function switchState(state) {
     } else if (state == "discovery") {
         leftArrow2.style.display = "none";
         rightArrow2.style.display = "none";
+
+    } else if (state == "end"){
+        blueVial.style.display = "none"
+        purpleVial.style.display = "none"
+        redVial.style.display = "none"
+        yellowVial.style.display = "none"
+        greenVial.style.display = "none"
+        orangeVial.style.display = "none"
+        leftArrow.style.display = "none";
+        rightArrow.style.display = "none";
+        leftArrow2.style.display = "none";
+        rightArrow2.style.display = "none";
     }
 }
 
@@ -379,6 +391,15 @@ function drawScene() {
             }
         }
 
+        if (classificationSet.length == 0){
+            switchState("end");
+        } 
+
+    } else if(gameState == "end") {
+        ctx.fillStyle = "Black"
+        ctx.font = "32pt serif"
+        ctx.fillText("You Scored " + score, 120, 400);
+        ctx.fillText("Out Of " + maxScore + " Possible Points!", 10, 450);
     } else if (gameState == "01011001") { // outdated code lol
         // halo around selected card or button
         ctx.fillStyle = "blue";

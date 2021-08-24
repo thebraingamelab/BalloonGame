@@ -1,4 +1,5 @@
 let score = 0;
+let maxScore = 0;
 let scoreMultiplier = 1;
 let lastPick;
 let selected = -15;
