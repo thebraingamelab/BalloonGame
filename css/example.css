@@ -54,6 +54,33 @@ canvas {
     height: 28%;
 }
 
+#left-arrow2 {
+    background-color: white;
+    font-style: italic;
+
+    z-index: 1;
+    position: absolute;
+    right: 75%;
+    top: 85.5%;
+    height: 7%;
+}
+
+#right-arrow2 {
+    background-color: white;
+    font-style: italic;
+
+    z-index: 1;
+    position: absolute;
+    right: 15%;
+    top: 85.5%;
+    height: 7%;
+}
+
+
+
+
+
+
 #left-arrow {
     background-color: white;
     font-style: italic;

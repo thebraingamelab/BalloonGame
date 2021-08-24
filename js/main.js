@@ -110,7 +110,7 @@ let fire = new Image();
 let flask = new Image();
 
 function loadGraphics() {
-//  star.src = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.shareicon.net%2Fdata%2F2015%2F12%2F07%2F683924_star_512x512.png&f=1&nofb=1"
+    //  star.src = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.shareicon.net%2Fdata%2F2015%2F12%2F07%2F683924_star_512x512.png&f=1&nofb=1"
     bolt.src = "graphics/bolt.png"
     fire.src = "graphics/fire.jpg"
     flask.src = "icons/flask.svg"
@@ -174,11 +174,58 @@ function updateButtons() {
                         textX: 40,
                         textY: 45,
                     },
+                }, 
+
+                {
+                    name: "skip",
+                    x: 150,
+                    y: 900,
+                    width: 220,
+                    height: 40,
+                    display: {
+                        color: "#444444",
+                        font: '18px serif',
+                        text: "I've figured it out",
+                        textColor: "orange",
+                        textX: 15,
+                        textY: 25,
+                    },
                 }
             ]
             break;
-        case "testing":
+        case "classification":
             buttons = [
+                {
+                    name: "reacts",
+                    x: 160,
+                    y: 770,
+                    width: 200,
+                    height: 60,
+                    display: {
+                        color: "#006400",
+                        font: '28px serif',
+                        text: "REACTS",
+                        textColor: "white",
+                        textX: 40,
+                        textY: 40,
+                    },
+                },
+
+                {
+                    name: "doesn't react",
+                    x: 160,
+                    y: 850,
+                    width: 200,
+                    height: 60,
+                    display: {
+                        color: "#8B0000",
+                        font: '18px serif',
+                        text: "DOESN'T REACT",
+                        textColor: "white",
+                        textX: 10,
+                        textY: 40,
+                    },
+                }
             ]
             break;
         default:
@@ -189,22 +236,47 @@ function updateButtons() {
 function switchState(state) {
     gameState = state;
     updateButtons();
-    if (gameState == "testing") {
-        cards[0] = createCard();
-    } else if (gameState == "discovery") {
-        cards[0].symbols = [];
+    if (gameState == "classification") {
+        // Hide old HTML elements and show new ones.
+        // there's probably a better way to do this but I'm too lazy to figure it out.
+        blueVial.style.display = "none"
+        purpleVial.style.display = "none"
+        redVial.style.display = "none"
+        yellowVial.style.display = "none"
+        greenVial.style.display = "none"
+        orangeVial.style.display = "none"
+        leftArrow.style.display = "none";
+        rightArrow.style.display = "none";
+
+        leftArrow2.style.display = "";
+        rightArrow2.style.display = "";
+
+        flaskContents = [];
+        lastPick = null;
+        classificationSet = generateClassificationSet();
+
+        // for (let i=0; )
+    } else if (state == "discovery") {
+        leftArrow2.style.display = "none";
+        rightArrow2.style.display = "none";
+    }
+}
+
+function drawButtons() {
+    for (let i = 0; i < buttons.length; i++) {
+        ctx.fillStyle = buttons[i].display.color;
+        ctx.fillRect(buttons[i].x, buttons[i].y, buttons[i].width, buttons[i].height);
+        ctx.font = buttons[i].display.font;
+        ctx.fillStyle = buttons[i].display.textColor;
+        ctx.fillText(buttons[i].display.text,
+            buttons[i].x + buttons[i].display.textX, buttons[i].y + buttons[i].display.textY);
     }
 }
 
 function drawScene() {
+
     ctx.clearRect(0, 0, 540, 960); // clear the frame
-    // where to draw the ith card
-    function posn(i) { //more outdated code lol
-        return {
-            x: 20 + (100 * i % 500),
-            y: 200 + 160 * Math.floor(i / 5)
-        }
-    }
+
 
     ctx.save();
     if (gameState == "discovery") { // gamne is in progress
@@ -220,14 +292,7 @@ function drawScene() {
         }
 
         // draw the buttons
-        for (let i = 0; i < buttons.length; i++) {
-            ctx.fillStyle = buttons[i].display.color;
-            ctx.fillRect(buttons[i].x, buttons[i].y, buttons[i].width, buttons[i].height);
-            ctx.font = buttons[i].display.font;
-            ctx.fillStyle = buttons[i].display.textColor;
-            ctx.fillText(buttons[i].display.text,
-                buttons[i].x + buttons[i].display.textX, buttons[i].y + buttons[i].display.textY);
-        }
+        drawButtons();
 
         // "lol" said the scorpion "lmao"
         drawFlask(260, 480, flaskContents, 1.9);
@@ -241,17 +306,21 @@ function drawScene() {
         ctx.fillText("(fire indicates reaction)", 115, 250)
 
         // Draw the pick history
-        for(let i=hIndex; i<5+hIndex; i++){
-            if(pickHistory.length - i >= 0){
-                drawFlask(140+65*(i-hIndex), 220, pickHistory[pickHistory.length - i].card, 0.6)
-                if(pickHistory[pickHistory.length - i].score == 1){
-                    ctx.drawImage(fire, 152+65*(i-hIndex), 165, 14, 20);
+        for (let i = hIndex; i < 5 + hIndex; i++) {
+            if (pickHistory.length - i >= 0) {
+                drawFlask(140 + 65 * (i - hIndex), 220, pickHistory[pickHistory.length - i].card, 0.6)
+                if (pickHistory[pickHistory.length - i].score == 1) {
+                    ctx.drawImage(fire, 152 + 65 * (i - hIndex), 165, 14, 20);
                 }
             }
         }
         // possibly show/hide left and right arrows. 
 
-
+        // draw the timer
+        let minutes = Math.floor(countdown / 60);
+        let seconds = countdown % 60;
+        if (seconds < 10) { seconds = "0" + seconds; } // Nothing to see here, move along
+        ctx.fillText(minutes + ":" + seconds, 420, 130);
 
         // draw the text
         ctx.restore();
@@ -264,7 +333,7 @@ function drawScene() {
         if (lastPick != null) {
             if (lastPick.score == 1) {
                 ctx.fillText("REACTION caused by combination:", 50, 720);
-                
+
             } else if (lastPick.score == 0) {
                 ctx.fillText("Combination below DID NOT react:", 50, 720);
             } else if (lastPick.score == -1) {
@@ -273,7 +342,44 @@ function drawScene() {
             drawFlask(260, 840, lastPick.card, 1);
         }
 
-    } else if (gameState == "testing") {
+    } else if (gameState == "classification") {
+    
+        // halo around selected button
+        ctx.fillStyle = "blue";
+        if (selected > 900) { // selected > 900 means a button is selected.
+            let thisWork; thisWork = selected - 901; // I am losing my mind
+            ctx.fillRect(buttons[thisWork].x - 5, buttons[thisWork].y - 5, buttons[thisWork].width + 10, buttons[thisWork].height + 10);
+        }
+
+        drawButtons();
+
+        function posn(i) {
+            return {
+                x: 80 + (125 * (i % 4)),
+                y: 260 + 160 * Math.floor(i / 4)
+            }
+        }
+
+        for (let i = 0; i < classificationSet.length; i++) {
+            drawFlask(posn(i).x, posn(i).y, classificationSet[i], 1);
+
+            ctx.strokeStyle = "blue";
+        }
+
+        ctx.strokeRect(posn(selectedFlask).x - 58, posn(selectedFlask).y - 108, 118, 118); //halo around selected flask;
+
+        ctx.fillStyle = "black";
+        ctx.fillText("score: " + score, 420, 110);
+
+        if (lastPick != null) {
+            if (lastPick.reacts) {
+                ctx.fillText(lastPick.feedback + ". The combination reacts.", 65, 140);
+            } else {
+                ctx.fillText(lastPick.feedback + ". The combination does not react.", 40, 140);
+            }
+        }
+
+    } else if (gameState == "01011001") { // outdated code lol
         // halo around selected card or button
         ctx.fillStyle = "blue";
         if (selected > 900) { // selected > 900 means a button is selected.
@@ -326,6 +432,7 @@ function drawScene() {
         ctx.font = '24px serif'
 
     }
+
     else if (gameState == "game over") { // game over
         ctx.font = '48px serif'
         ctx.fillText("Game Over", 120, 400);
@@ -419,6 +526,9 @@ function drawCard(x, y, card, scale) { // actually inputs a card's symbols, not 
 
 // draws a flask with bottom middle point at (x,y)
 function drawFlask(x, y, contents, sz) {
+    if (contents == null) {
+        return;
+    }
     ctx.save();
     ctx.strokeStyle = "black";
 
@@ -490,14 +600,14 @@ function selectCard(i) {
 
 function handleClick(input) {
     if (template.isPaused()) {
-        return; // Descent into madness 
-    } // hahahahahahahahahaaaaaaaaaaaAaaaaa
+        return; // buttons can't be pressed when pause menue is up
+    }
     let posn = resizer.getRelativeEventCoords(input);
     let x = posn.x;
     let y = posn.y;
-    console.log("logged mouse move at x=" + x + ", y=" + y);
+    console.log("logged mouse click at x=" + x + ", y=" + y);
 
-    if (gameState == "discovery" || gameState == "testing") {
+    if (gameState == "discovery" || gameState == "classification") {
         let dX; let dY;
         /* if (gameState == "discovery") {
              for (let i = 0; i < cards.length; i++) {
@@ -535,7 +645,7 @@ function handleMouseDown(input) { // sets value of selected to create shiny blue
     let y = posn.y;
     // console.log("logged mouse move at x=" + x + ", y=" + y);
 
-    if (gameState == "discovery" || gameState == "testing") {
+    if (gameState == "discovery" || gameState == "classification") {
         let dX; let dY;
         /* if (gameState == "discovery") {
             for (let i = 0; i < cards.length; i++) {
@@ -623,22 +733,9 @@ function keyDownHandler(key) {
 
 
 function newFrame() {
-    /* if (gameState == 1) { //[0,14]: cards. 15: reroll button
-        if (selected > 15) {
-            selected = 15;
-        } if (selected < 0) {
-            selected = logic.oldSelected;
-        }
-    } else if (gameState == 2) {
-        if (selected > 5) {
-            selected = logic.oldSelected;
-        } else if (selected < 0) {
-            selected = logic.oldSelected;
-        }
-    } */ // outdated code
-    /* if (turns <= 0) {    
-        gameState = 0;
-    } */
+    if (countdown < 1 && gameState == "discovery") {
+        switchState("classification");
+    }
 
     drawScene(cards);
     window.requestAnimationFrame(newFrame);
@@ -659,7 +756,6 @@ function init() {
     ctx.clearRect(0, 0, 540, 960);
     switchState("discovery");
 
-    newFrame();
 
     // log some stuff
     console.log("scoring Rules:");
@@ -673,6 +769,11 @@ function init() {
     }
     pickHistory.push(lastPick)
     cards[0].symbols = hint.symbols;
+
+    countdown = 240;
+    window.setInterval(() => countdown = Math.max(countdown - 1, 0), 1000);
+
+    newFrame();
 }
 
 let cards = [];

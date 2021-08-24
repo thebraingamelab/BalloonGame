@@ -2,17 +2,32 @@ let score = 0;
 let scoreMultiplier = 1;
 let lastPick;
 let selected = -15;
+let selectedFlask = 0;
 let turns = 0;
 let gameState; //2: pre-game menu, 1: game in progress, 0: game over
 let mouseControls = true;
 let pickHistory = [];
 let buttons = [];
 let flaskContents = [];
+let classificationSet = [];
+// what do you mean "exposing every variable isn't good programming practice"
+
+let countdown;
 
 let hIndex = 1;
 
+// HTML elements
 let leftArrow = document.getElementById("left-arrow");
 let rightArrow = document.getElementById("right-arrow");
+let leftArrow2 = document.getElementById("left-arrow2");
+let rightArrow2 = document.getElementById("right-arrow2");
+
+let blueVial = document.getElementById("blue-vial");
+let purpleVial = document.getElementById("purple-vial");
+let redVial = document.getElementById("red-vial");
+let yellowVial = document.getElementById("yellow-vial");
+let orangeVial = document.getElementById("orange-vial");
+let greenVial = document.getElementById("green-vial");
 
 /////////////// 
 // Game-specific logic
@@ -41,93 +56,112 @@ function createCard() { // a card is a list of symbols
     }
 }
 
-function createScoringRule(){
+function createScoringRule() {
     let ruleTemplates = ["atLeastN", "exactlyN", "combination"];
     let atomicRules = [];
-    for(let i=0; i<2; i++){
+    for (let i = 0; i < 2; i++) {
         shuffleArray(ruleTemplates);
         let rule = {};
         rule.type = ruleTemplates[0];
         let tempArray = logic.colors; shuffleArray(tempArray);
         // set parameters
-        if(rule.type == "combination"){
-            rule.parameters = tempArray.slice(0,randomInt(2,3));
-        } else {
+        if (rule.type == "combination") {
+            rule.parameters = tempArray.slice(0, randomInt(2, 3));
+        } else { // 
             const color = tempArray[0];
-            const n = randomInt(2,4); 
+            const n = randomInt(2, 4);
             rule.parameters = [];
-            for (let j = 0; j<n; j++) {
+            for (let j = 0; j < n; j++) {
                 rule.parameters.push(color);
             }
         }
         atomicRules.push(rule);
     }
-    let conjunctions = ["or", "and", "xor", "and not"];
-    let conjunction = conjunctions[randomInt(0,3)];
+    let conjunctions = ["or", "and", "xor", "and not", "just a"];
+    let conjunction = conjunctions[randomInt(0, 4)];
+    console.log(atomicRules);
 
-    return {
-        atomicRules: atomicRules,
-        conjunction: conjunction
-    }
-}
-// checks if the given combination matches the scoring rules
-function checkCombination(stuff){
-    function checkAtomicRule(rule){
-        if (rule.type == "atLeastN" || rule.type == "combination"){
-            return IsSubset(rule.parameters, stuff)
-        } else if(rule.type == "exactlyN"){
-            rule.parameters.push(rule.parameters[0]);
-            let output = (IsSubset(rule.parameters.slice(0,rule.parameters.length - 1), stuff) && !IsSubset(rule.parameters, stuff));
-            rule.parameters.pop();
-            return output;
-        } else {
-            console.log("ERROR: " + rule.type + " is not a valid rule.");
+    if (union(atomicRules[0].parameters, atomicRules[1].parameters).length > 6) {
+        console.log("Union too large. Rerolling.")
+        return createScoringRule();
+    } else if (IsSubset(atomicRules[0].parameters, atomicRules[1].parameters)
+        || IsSubset(atomicRules[1].parameters, atomicRules[0].parameters)) {
+        console.log("Rulse contain subset. Rerolling.")
+        return createScoringRule();
+    } else {
+        return {
+            atomicRules: atomicRules,
+            conjunction: conjunction
         }
     }
+}
+
+function checkAtomicRule(rule, combination) {
+    if (rule.type == "atLeastN" || rule.type == "combination") {
+        return IsSubset(rule.parameters, combination)
+    } else if (rule.type == "exactlyN") {
+        rule.parameters.push(rule.parameters[0]);
+        let output = (IsSubset(rule.parameters.slice(0, rule.parameters.length - 1), combination) && !IsSubset(rule.parameters, combination));
+        rule.parameters.pop();
+        return output;
+    } else {
+        console.log("ERROR: " + rule.type + " is not a valid rule.");
+    }
+}
+
+// checks if the given combination matches the scoring rules
+function checkCombination(combination) {
     let rule1 = scoringRules.atomicRules[0];
     let rule2 = scoringRules.atomicRules[1];
-    switch(scoringRules.conjunction){
+    switch (scoringRules.conjunction) {
         case "or":
-            return (checkAtomicRule(rule1) || checkAtomicRule(rule2));
+            return (checkAtomicRule(rule1, combination) || checkAtomicRule(rule2, combination));
             break;
         case "and":
-            return (checkAtomicRule(rule1) && checkAtomicRule(rule2));
+            return (checkAtomicRule(rule1, combination) && checkAtomicRule(rule2, combination));
             break;
         case "and not":
-            return (checkAtomicRule(rule1) && !checkAtomicRule(rule2));
+            return (checkAtomicRule(rule1, combination) && !checkAtomicRule(rule2, combination));
             break;
         case "xor":
-            return !(checkAtomicRule(rule1) == checkAtomicRule(rule2));
+            return !(checkAtomicRule(rule1, combination) == checkAtomicRule(rule2, combination));
             break;
+        case "just a":
+            return checkAtomicRule(rule1, combination);
         default:
             console.log("ERROR: " + scoringRules.conjunction + " is not a valid rule");
             return false;
     }
 }
 
-function generateHint(){
+function fillFlask(flask) {
+    const k = 6 - flask.length
+    for (let j = 0; j < k; j++) {
+        let n = randomInt(0, 6);
+        if (n != 6) { // uniformly fill the rest of the "slots" with either a random color or nothing
+            flask.push(logic.colors[n])
+        }
+    }
+}
+
+function generateHint() {
     let hint = [];
-    for (let i=0; i<20; i++){
+    for (let i = 0; i < 20; i++) {
         hint = [];
         // initialize hint so it satisfies the first rule
-        for (let j=0; j<scoringRules.atomicRules[0].parameters.length; j++){ 
+        for (let j = 0; j < scoringRules.atomicRules[0].parameters.length; j++) {  // make a deep copy
             hint.push(scoringRules.atomicRules[0].parameters[j]);
         }
         // fill the rest of the hint randomly
-        const k = 6 - hint.length;
-        for (let j=0; j<k; j++){
-            let n = randomInt(1,6);
-            if (n!=6){ // uniformly fill the rest of the "slots" in the hint with either a random color or nothing
-                hint.push(logic.colors[n])
-            }
-        }
-        if (checkCombination(hint)){
+        fillFlask(hint);
+        if (checkCombination(hint)) {
             shuffleArray(hint);
             return hint;
         } else {
             console.log("rerolling combination " + hint);
         }
     }
+
     console.log("no valid hint found for following rules:");
     console.log(scoringRules);
     scoringRules = createScoringRule();
@@ -135,6 +169,113 @@ function generateHint(){
     console.log(scoringRules);
     console.log("attempting to generate new hint.");
     return generateHint();
+}
+
+function generateClassificationSet() {
+    let rule1 = scoringRules.atomicRules[0];
+    let rule2 = scoringRules.atomicRules[1];
+    let set = [];
+
+    let a = [...rule1.parameters]
+    fillFlask(a);
+    
+
+    let b = [...rule2.parameters]
+    fillFlask(b);
+    
+
+    let aNotB = [];
+    while(true){
+        aNotB = [...rule1.parameters]
+        fillFlask(aNotB);
+        if(!checkAtomicRule(rule2, aNotB)) {
+            break;
+        }
+    }
+    
+
+    let bNotA = [];
+    while(true){
+        aNotB = [...rule2.parameters]
+        fillFlask(bNotA);
+        if(!checkAtomicRule(rule1, aNotB)) {
+            break;
+        }
+    }
+   
+
+    let aAndB = union(rule1.parameters, rule2.parameters);
+    fillFlask(aAndB);
+    
+    shuffleArray(a);
+    shuffleArray(b);
+    shuffleArray(aNotB);
+    shuffleArray(bNotA);
+    shuffleArray(aAndB);
+    set.push(a);
+    set.push(b);
+    set.push(aNotB);
+    set.push(bNotA);
+    set.push(aAndB);
+
+    let m1 = Math.floor(randomInt(0,8)/2);
+    let m2 = Math.floor(randomInt(0,8)/2);
+    let k = Math.floor(randomInt(0,6)/3);
+    let n = 11 - m1 - m2 - k
+
+    let color1 = logic.colors[randomInt(0,5)];
+    let l1 = randomInt(2,4)
+    for (let i = 0; i < m1; i++){
+        let temp = [];
+        for (let j = 0; j<l1; j++){
+            temp.push(color1);
+        }
+        fillFlask(temp);
+        shuffleArray(temp);
+        set.push(temp);
+    }
+
+    let color2 = logic.colors[randomInt(0,5)];
+    let l2 = randomInt(2,4)
+    for (let i = 0; i < m2; i++){
+        let temp = [];
+        for (let j = 0; j<l2; j++){
+            temp.push(color2);
+        }
+        fillFlask(temp);
+        shuffleArray(temp);
+        set.push(temp);
+    }
+
+    for (let i = 0; i < k; i++){
+        let temp = [];
+        let color = logic.colors[randomInt(0,5)];
+        let l = randomInt(2,3)
+        for (let j = 0; j<l; j++){
+            temp.push(color);
+        }
+
+        let color0 = logic.colors[randomInt(0,5)];
+        l = randomInt(2,3)
+        for (let j = 0; j<l; j++){
+            temp.push(color0);
+        }
+        
+        fillFlask(temp);
+        shuffleArray(temp);
+        set.push(temp);
+    }
+
+    for (let i = 0; i < n; i++){
+        let temp = [];
+        fillFlask(temp);
+        set.push(temp);
+    }
+
+
+    shuffleArray(set);
+    return set; 
+    
 }
 
 
@@ -388,47 +529,47 @@ function generateHint(){
     }
 } */
 
-/* function createVariableScoringRules() {
-    let tempArray = [
-        [-3,-2,-2,-1,-1,-1,0,0,1],
-        [-2,-1,-1,0,0,0,1,1,2],
-        [-1,0,0,1,1,1,2,2,3],
-        [0,1,1,2,2,2,3,3,4],
-        [1,2,2,3,3,3,4,4,5],
-        [3,4,4,5,5,5,6,6,7],
-    ]
-    shuffleArray(tempArray);
-    console.log(tempArray);
-
-    return {
-        square: (a) => a + tempArray[0][randomInt(0,7)],
-        diamond: (a) => a + tempArray[1][randomInt(0,7)],
-        circle: (a) => a + tempArray[2][randomInt(0,7)],
-        triangle: (a) => a + tempArray[3][randomInt(0,7)],
-        star: (a) => a + tempArray[4][randomInt(0,7)],
-        bolt: (a) => a + tempArray[5][randomInt(0,7)],
-    }
-} */
-
-/* function createBanditScoringRules(boxSize,min,max){
-    let tempArray = [[],[],[],[],[],[]]
-    for (let i = 0; i<6; i++){
-        for (let j = 0; j<boxSize; j++){
-            tempArray[i].push(randomInt(min,max))
-        }
-    }
+    /* function createVariableScoringRules() {
+        let tempArray = [
+            [-3,-2,-2,-1,-1,-1,0,0,1],
+            [-2,-1,-1,0,0,0,1,1,2],
+            [-1,0,0,1,1,1,2,2,3],
+            [0,1,1,2,2,2,3,3,4],
+            [1,2,2,3,3,3,4,4,5],
+            [3,4,4,5,5,5,6,6,7],
+        ]
+        shuffleArray(tempArray);
+        console.log(tempArray);
     
-    return {
-        square: (a) => a + tempArray[0][randomInt(0,boxSize-1)],
-        diamond: (a) => a + tempArray[1][randomInt(0,boxSize-1)],
-        circle: (a) => a + tempArray[2][randomInt(0,boxSize-1)],
-        triangle: (a) => a + tempArray[3][randomInt(0,boxSize-1)],
-        star: (a) => a + tempArray[4][randomInt(0,boxSize-1)],
-        bolt: (a) => a + tempArray[5][randomInt(0,boxSize-1)],
-    }
-} */
+        return {
+            square: (a) => a + tempArray[0][randomInt(0,7)],
+            diamond: (a) => a + tempArray[1][randomInt(0,7)],
+            circle: (a) => a + tempArray[2][randomInt(0,7)],
+            triangle: (a) => a + tempArray[3][randomInt(0,7)],
+            star: (a) => a + tempArray[4][randomInt(0,7)],
+            bolt: (a) => a + tempArray[5][randomInt(0,7)],
+        }
+    } */
 
-// commeent
+    /* function createBanditScoringRules(boxSize,min,max){
+        let tempArray = [[],[],[],[],[],[]]
+        for (let i = 0; i<6; i++){
+            for (let j = 0; j<boxSize; j++){
+                tempArray[i].push(randomInt(min,max))
+            }
+        }
+        
+        return {
+            square: (a) => a + tempArray[0][randomInt(0,boxSize-1)],
+            diamond: (a) => a + tempArray[1][randomInt(0,boxSize-1)],
+            circle: (a) => a + tempArray[2][randomInt(0,boxSize-1)],
+            triangle: (a) => a + tempArray[3][randomInt(0,boxSize-1)],
+            star: (a) => a + tempArray[4][randomInt(0,boxSize-1)],
+            bolt: (a) => a + tempArray[5][randomInt(0,boxSize-1)],
+        }
+    } */
+
+    // commeent
 })();
 
 
@@ -470,4 +611,26 @@ function IsSubset(arr1, arr2) { //this is almost as inefficient an algorithm as 
     }
     // console.log("true: [" + arr1 + "] is a subset [" + arr2 + "]");
     return true;
+}
+
+// joins two arrays 
+// this code is bad but it works
+function union(arr1, arr2) {
+    let copy = [...arr2]
+    newArr = [];
+    for (i = 0; i < arr1.length; i++) {
+        newArr.push(arr1[i]);
+        for (j = 0; j < copy.length; j++) {
+            if (arr1[i] == copy[j]) {
+                delete copy[j];
+                break;
+            }
+        }
+    }
+    for (let i = 0; i < copy.length; i++) {
+        if (copy[i] != null) {
+            newArr.push(copy[i]);
+        }
+    }
+    return newArr;
 }
