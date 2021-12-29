@@ -184,11 +184,11 @@ function updateButtons() {
                     height: 40,
                     display: {
                         color: "#444444",
-                        font: '18px serif',
+                        font: '26px serif',
                         text: "I've figured it out",
                         textColor: "orange",
                         textX: 15,
-                        textY: 25,
+                        textY: 28,
                     },
                 }
             ]
@@ -219,10 +219,10 @@ function updateButtons() {
                     height: 60,
                     display: {
                         color: "#8B0000",
-                        font: '18px serif',
+                        font: '22px serif',
                         text: "DOESN'T REACT",
                         textColor: "white",
-                        textX: 10,
+                        textX: 15,
                         textY: 40,
                     },
                 }
