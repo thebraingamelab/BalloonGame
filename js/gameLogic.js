@@ -11,6 +11,7 @@ let pickHistory = [];
 let buttons = [];
 let flaskContents = [];
 let classificationSet = [];
+let testedFlaks = [];
 // what do you mean "exposing every variable isn't good programming practice"
 
 let countdown;
@@ -173,10 +174,19 @@ function generateHint() {
 }
 
 function generateClassificationSet() {
+    // get scoring rules and initialize empty classification set 
     let rule1 = scoringRules.atomicRules[0];
     let rule2 = scoringRules.atomicRules[1];
     let set = [];
 
+    // algorithm works as follows:
+    // first 5 "core" flasks are created. These flasks are intitalized to have the minimal contents required to satisfy the following binary combinations
+    // (a), (b), (a AND b), (a NOT b), (b NOT a)
+    // (NOT a NOT b) is not included as it is uninteresting. (a) and (b) (where the other rule is not taken into consideration) are added to increase the size of the core pool.
+    // Once these flasks are initialized, they are each "filled" with random dummy liquids to prevent them from being a givaway
+    // The remaining 11 flasks are generated in a way that obscures the additional weight given to these "core" combinations.
+    // TODO: finish doccumentation
+ 
     let a = [...rule1.parameters]
     fillFlask(a);
     
@@ -208,11 +218,13 @@ function generateClassificationSet() {
     let aAndB = union(rule1.parameters, rule2.parameters);
     fillFlask(aAndB);
     
-    shuffleArray(a);
+    // sramble order of liquids in in core flasks 
+    shuffleArray(a);  
     shuffleArray(b);
     shuffleArray(aNotB);
     shuffleArray(bNotA);
     shuffleArray(aAndB);
+    // add core flasks to classification set
     set.push(a);
     set.push(b);
     set.push(aNotB);

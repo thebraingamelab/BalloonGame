@@ -37,6 +37,8 @@ function cycleHistory(x) {
     newIndex += x;
     if (newIndex >= 1) {
         hIndex = newIndex;
+    } else {
+        hIndex = 1;
     }
     if (hIndex == 1) {
         leftArrow.style.display = "none";
@@ -53,6 +55,7 @@ function addMaterial(material) {
 }
 
 function burnContents() {
+    cycleHistory(-9999);
     lastPick = {
         card: flaskContents, //should be symbols not card but I'm too lazy to change it
         score: checkCombination(flaskContents) // formatting it like this because... actually I don't even know anymore    
@@ -105,6 +108,7 @@ function pushButton(button) {
                     reacts: false
                 }
             }
+            testedFlaks.push({contents: classificationSet[selectedFlask], data: lastPick});
             classificationSet.splice(selectedFlask, 1);
             // classificationSet[selectedFlask] =  null;
             break;
@@ -127,6 +131,7 @@ function pushButton(button) {
                     reacts: false
                 }
             }
+            testedFlaks.push({contents: classificationSet[selectedFlask], data: lastPick});
             classificationSet.splice(selectedFlask, 1);
             // classificationSet[selectedFlask] =  null;
             break;

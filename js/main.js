@@ -202,7 +202,8 @@ function updateButtons() {
                     width: 200,
                     height: 60,
                     display: {
-                        color: "#006400",
+                        // color: "#006400",
+                        color: "#EEBC1D",
                         font: '28px serif',
                         text: "REACTS",
                         textColor: "white",
@@ -218,7 +219,8 @@ function updateButtons() {
                     width: 200,
                     height: 60,
                     display: {
-                        color: "#8B0000",
+                        // color: "#8B0000",
+                        color: "#A9A9A9",
                         font: '22px serif',
                         text: "DOESN'T REACT",
                         textColor: "white",
@@ -373,12 +375,29 @@ function drawScene() {
         }
 
         for (let i = 0; i < classificationSet.length; i++) {
-            drawFlask(posn(i).x, posn(i).y, classificationSet[i], 1);
-
-            ctx.strokeStyle = "blue";
+            let j = i + testedFlaks.length;
+            drawFlask(posn(j).x, posn(j).y, classificationSet[i], 1);
         }
 
-        ctx.strokeRect(posn(selectedFlask).x - 58, posn(selectedFlask).y - 108, 118, 118); //halo around selected flask;
+        for (let i = 0; i < testedFlaks.length; i++) {
+            let j = i;
+            ctx.strokeStyle = "black"
+            ctx.strokeRect(posn(j).x - 58, posn(j).y - 108, 118, 118);
+            if(testedFlaks[i].data.feedback == "CORRECT"){
+                ctx.fillStyle = "green"
+            } else {
+                ctx.fillStyle = "red"
+            }
+            ctx.fillRect(posn(j).x - 50, posn(j).y - 102, 20, 20)
+            if(testedFlaks[i].data.reacts){
+                ctx.drawImage(fire, posn(j).x + 30, posn(j).y - 102, 14, 20);
+            } 
+            
+            drawFlask(posn(j).x, posn(j).y, testedFlaks[i].contents, 1);
+        }
+
+        ctx.strokeStyle = "blue";
+        ctx.strokeRect(posn(selectedFlask+testedFlaks.length).x - 58, posn(selectedFlask+testedFlaks.length).y - 108, 118, 118); //halo around selected flask;
 
         ctx.fillStyle = "black";
         ctx.fillText("score: " + score, 420, 110);
@@ -392,14 +411,15 @@ function drawScene() {
         }
 
         if (classificationSet.length == 0){
-            switchState("end");
+            selectedFlask=9999;
+            setTimeout(switchState,900,"end");
         } 
 
     } else if(gameState == "end") {
         ctx.fillStyle = "Black"
         ctx.font = "32pt serif"
-        ctx.fillText("You Scored " + score, 120, 400);
-        ctx.fillText("Out Of " + maxScore + " Possible Points!", 10, 450);
+        ctx.fillText("You Scored " + score, 140, 400);
+        ctx.fillText("Out Of " + maxScore + " Possible Points!", 40, 450);
     } else if (gameState == "01011001") { // outdated code lol
         // halo around selected card or button
         ctx.fillStyle = "blue";
