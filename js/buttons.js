@@ -108,7 +108,7 @@ function pushButton(button) {
                     reacts: false
                 }
             }
-            testedFlaks.push({contents: classificationSet[selectedFlask], data: lastPick});
+            testedFlasks.push({contents: classificationSet[selectedFlask], data: lastPick});
             classificationSet.splice(selectedFlask, 1);
             // classificationSet[selectedFlask] =  null;
             break;
@@ -131,7 +131,7 @@ function pushButton(button) {
                     reacts: false
                 }
             }
-            testedFlaks.push({contents: classificationSet[selectedFlask], data: lastPick});
+            testedFlasks.push({contents: classificationSet[selectedFlask], data: lastPick});
             classificationSet.splice(selectedFlask, 1);
             // classificationSet[selectedFlask] =  null;
             break;

@@ -375,29 +375,29 @@ function drawScene() {
         }
 
         for (let i = 0; i < classificationSet.length; i++) {
-            let j = i + testedFlaks.length;
+            let j = i + testedFlasks.length;
             drawFlask(posn(j).x, posn(j).y, classificationSet[i], 1);
         }
 
-        for (let i = 0; i < testedFlaks.length; i++) {
+        for (let i = 0; i < testedFlasks.length; i++) {
             let j = i;
             ctx.strokeStyle = "black"
             ctx.strokeRect(posn(j).x - 58, posn(j).y - 108, 118, 118);
-            if(testedFlaks[i].data.feedback == "CORRECT"){
+            if(testedFlasks[i].data.feedback == "CORRECT"){
                 ctx.fillStyle = "green"
             } else {
                 ctx.fillStyle = "red"
             }
             ctx.fillRect(posn(j).x - 50, posn(j).y - 102, 20, 20)
-            if(testedFlaks[i].data.reacts){
+            if(testedFlasks[i].data.reacts){
                 ctx.drawImage(fire, posn(j).x + 30, posn(j).y - 102, 14, 20);
             } 
             
-            drawFlask(posn(j).x, posn(j).y, testedFlaks[i].contents, 1);
+            drawFlask(posn(j).x, posn(j).y, testedFlasks[i].contents, 1);
         }
 
         ctx.strokeStyle = "blue";
-        ctx.strokeRect(posn(selectedFlask+testedFlaks.length).x - 58, posn(selectedFlask+testedFlaks.length).y - 108, 118, 118); //halo around selected flask;
+        ctx.strokeRect(posn(selectedFlask+testedFlasks.length).x - 58, posn(selectedFlask+testedFlasks.length).y - 108, 118, 118); //halo around selected flask;
 
         ctx.fillStyle = "black";
         ctx.fillText("score: " + score, 420, 110);
@@ -420,6 +420,11 @@ function drawScene() {
         ctx.font = "32pt serif"
         ctx.fillText("You Scored " + score, 140, 400);
         ctx.fillText("Out Of " + maxScore + " Possible Points!", 40, 450);
+        // ctx.
+
+    // ******************
+    // OUTDATED CODE
+    // ******************
     } else if (gameState == "01011001") { // outdated code lol
         // halo around selected card or button
         ctx.fillStyle = "blue";
@@ -480,6 +485,9 @@ function drawScene() {
         // ctx.fillText("Score: " + score, 120, 450);
         // console.log("drawing gameover screen");
     }
+    // ******************
+    // OUTDATED CODE
+    // ******************
     ctx.restore();
 }
 
@@ -571,21 +579,12 @@ function drawFlask(x, y, contents, sz) {
         return;
     }
     ctx.save();
-    ctx.strokeStyle = "black";
+
 
     const TH = 70; // where the "top part" of the flask starts
     const TW = 6; // twice the width of the "top" part of the flask.
     const IS = (50 - TW) / TH; // 1/slope (inverse slope)
 
-    // Draw the flask itself
-    ctx.beginPath();
-    ctx.moveTo(x - TW * sz, y - 100 * sz);
-    ctx.lineTo(x - TW * sz, y - TH * sz);
-    ctx.lineTo(x - 50 * sz, y);
-    ctx.lineTo(x + 50 * sz, y);
-    ctx.lineTo(x + TW * sz, y - TH * sz);
-    ctx.lineTo(x + TW * sz, y - 100 * sz);
-    ctx.stroke();
 
     // fill the flask with liquids
     for (let i = 0; i < contents.length; i++) {
@@ -598,8 +597,22 @@ function drawFlask(x, y, contents, sz) {
         ctx.lineTo(x - (50 - (i + 1) * IS * 10) * sz, y - (i + 1) * 10 * sz);
         ctx.lineTo(x - (50 - i * IS * 10) * sz, y - i * 10 * sz);
         ctx.fill();
-
+        ctx.strokeStyle = "grey";
+        ctx.stroke();
     }
+
+    // Draw the flask itself
+    ctx.strokeStyle = "black";
+    ctx.beginPath();
+    ctx.moveTo(x - TW * sz, y - 100 * sz);
+    ctx.lineTo(x - TW * sz, y - TH * sz);
+    ctx.lineTo(x - 50 * sz, y);
+    ctx.lineTo(x + 50 * sz, y);
+    ctx.lineTo(x + TW * sz, y - TH * sz);
+    ctx.lineTo(x + TW * sz, y - 100 * sz);
+    ctx.stroke();
+    
+
     ctx.restore();
 }
 

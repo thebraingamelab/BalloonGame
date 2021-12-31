@@ -11,7 +11,7 @@ let pickHistory = [];
 let buttons = [];
 let flaskContents = [];
 let classificationSet = [];
-let testedFlaks = [];
+let testedFlasks = [];
 // what do you mean "exposing every variable isn't good programming practice"
 
 let countdown;
@@ -39,6 +39,10 @@ let logic = { // "config" variables used in backround rng
     // blue, red, purple, green, yellow, orange
     quantityRule: [1, 2, 3, 3, 4, 4, 5, 5, 6],
     oldSelected: 0
+}
+
+function explainRules() {
+
 }
 
 function createCard() { // a card is a list of symbols 
@@ -88,7 +92,7 @@ function createScoringRule() {
         return createScoringRule();
     } else if (IsSubset(atomicRules[0].parameters, atomicRules[1].parameters)
         || IsSubset(atomicRules[1].parameters, atomicRules[0].parameters)) {
-        console.log("Rulse contain subset. Rerolling.")
+        console.log("Rule contains subset. Rerolling.")
         return createScoringRule();
     } else {
         return {
