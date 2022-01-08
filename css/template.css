@@ -261,12 +261,14 @@
 
 /* society */
 #tutorial-menu .menu-button {
-    height: 10%;
+    position: absolute;
+    top: 85%;
+    height: 8%;
 }
 
 #tutorial-menu {
-    height: 60%;
-    width: 65%;
+    height: 75%;
+    width: 70%;
 }
 
 #tutorial-menu > div > p {

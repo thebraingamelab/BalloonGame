@@ -22,14 +22,44 @@ rightArrow.style.display = "none";
 
 function cycleFlask(x) {
     let newFlask = selectedFlask + x;
-    if (newFlask < 0) {
-        selectedFlask = classificationSet.length - 1;
-    } else if (newFlask >= classificationSet.length){
-        selectedFlask = 0;
+    console.log("*****************************")
+    function bS(){  // boundSelected (but also the other thing)
+    console.log("time for bS");
+        if (newFlask < 0) {
+            newFlask = 15
+            console.log("bounding to 15");
+        } else if (newFlask >= 16){
+            newFlask = 0;
+            console.log("bounding to 0");
+        }
     }
-    else {
-        selectedFlask = newFlask;
+    function itS(){ // iterateSelected
+        console.log("iterate test: " + newFlask);
+        for(i=0; i<testedFlasks.length; i++){
+            console.log("checking for conflict at " + testedFlasks[i].val);
+            let t=0
+            if(newFlask == testedFlasks[i].val){  // "push fowards" if you would try to select an already selected flask
+                if(x>=0){newFlask++;}
+                else {newFlask--}        
+                console.log("test conflict at " + testedFlasks[i].val +  " stepping onwards.");   
+                console.log("iterate test: " + newFlask);
+                t++;
+                i=-1;    
+                    
+            }
+            if(t>16) { // check to see if we're in an infinite loop. t>=16 or even t==16 should work but I'm playing it safe.
+                selectedFlask = 999;
+                return;
+            }
+        }
     }
+
+    itS();
+    bS(); 
+    itS();
+    // this should be all I need. 
+
+    selectedFlask = newFlask;
 }
 
 function cycleHistory(x) {
@@ -108,8 +138,9 @@ function pushButton(button) {
                     reacts: false
                 }
             }
-            testedFlasks.push({contents: classificationSet[selectedFlask], data: lastPick});
-            classificationSet.splice(selectedFlask, 1);
+            testedFlasks.push({val: selectedFlask, data: lastPick}); // please don't do the shallow copy thing
+            // classificationSet.splice(selectedFlask, 1);
+            cycleFlask(1);   
             // classificationSet[selectedFlask] =  null;
             break;
         case "doesn't react":
@@ -131,8 +162,9 @@ function pushButton(button) {
                     reacts: false
                 }
             }
-            testedFlasks.push({contents: classificationSet[selectedFlask], data: lastPick});
-            classificationSet.splice(selectedFlask, 1);
+            testedFlasks.push({val: selectedFlask, data: lastPick});
+            // classificationSet.splice(selectedFlask, 1);
+            cycleFlask(1);  
             // classificationSet[selectedFlask] =  null;
             break;
 

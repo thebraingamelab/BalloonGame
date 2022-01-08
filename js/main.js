@@ -107,12 +107,14 @@ function setDifficulty(dif) {
 // let star = new Image();
 let bolt = new Image();
 let fire = new Image();
+let fire2 = new Image();
 let flask = new Image();
 
 function loadGraphics() {
     //  star.src = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.shareicon.net%2Fdata%2F2015%2F12%2F07%2F683924_star_512x512.png&f=1&nofb=1"
     bolt.src = "graphics/bolt.png"
     fire.src = "graphics/fire.jpg"
+    fire2.src = "graphics/firething.png"
     flask.src = "icons/flask.svg"
 }
 
@@ -247,8 +249,8 @@ function switchState(state) {
         yellowVial.style.display = "none"
         greenVial.style.display = "none"
         orangeVial.style.display = "none"
-        leftArrow.style.display = "none";
-        rightArrow.style.display = "none";
+        // leftArrow.style.display = "none";
+        // rightArrow.style.display = "none";
 
         leftArrow2.style.display = "";
         rightArrow2.style.display = "";
@@ -288,7 +290,24 @@ function drawButtons() {
 }
 
 function drawScene() {
+    function drawPickHistory(){
+        // Draw the pick history box and text
+        ctx.strokeRect(105, 150, 330, 80);
+        ctx.font = '24px serif';
+        ctx.fillStyle = "black";
+        ctx.fillText("Pick History:", 120, 145);
+        ctx.fillText("(fire indicates reaction)", 115, 255)
 
+        // Draw the pick history
+        for (let i = hIndex; i < 5 + hIndex; i++) {
+            if (pickHistory.length - i >= 0) {
+                drawFlask(140 + 65 * (i - hIndex), 220, pickHistory[pickHistory.length - i].card, 0.6)
+                if (pickHistory[pickHistory.length - i].score == 1) {
+                    ctx.drawImage(fire, 152 + 65 * (i - hIndex), 165, 14, 20);
+                }
+            }
+        }
+    }
     ctx.clearRect(0, 0, 540, 960); // clear the frame
 
 
@@ -311,23 +330,8 @@ function drawScene() {
         // "lol" said the scorpion "lmao"
         drawFlask(260, 480, flaskContents, 1.9);
 
+        drawPickHistory();
 
-        // Draw the pick history box and text
-        ctx.strokeRect(105, 150, 330, 80);
-        ctx.font = '24px serif';
-        ctx.fillStyle = "black";
-        ctx.fillText("Pick History:", 120, 145);
-        ctx.fillText("(fire indicates reaction)", 115, 250)
-
-        // Draw the pick history
-        for (let i = hIndex; i < 5 + hIndex; i++) {
-            if (pickHistory.length - i >= 0) {
-                drawFlask(140 + 65 * (i - hIndex), 220, pickHistory[pickHistory.length - i].card, 0.6)
-                if (pickHistory[pickHistory.length - i].score == 1) {
-                    ctx.drawImage(fire, 152 + 65 * (i - hIndex), 165, 14, 20);
-                }
-            }
-        }
         // possibly show/hide left and right arrows. 
 
         // draw the timer
@@ -354,6 +358,8 @@ function drawScene() {
                 ctx.fillText("No reaction possible with no materials!", 16, 720);
             }
             drawFlask(260, 840, lastPick.card, 1);
+        } else {
+            ctx.fillText("Engineer gaming", 150, 720);
         }
 
     } else if (gameState == "classification") {
@@ -367,50 +373,55 @@ function drawScene() {
 
         drawButtons();
 
+        drawPickHistory();
+
         function posn(i) {
             return {
                 x: 80 + (125 * (i % 4)),
-                y: 260 + 160 * Math.floor(i / 4)
+                y: 365 + 128 * Math.floor(i / 4)
             }
         }
 
-        for (let i = 0; i < classificationSet.length; i++) {
-            let j = i + testedFlasks.length;
-            drawFlask(posn(j).x, posn(j).y, classificationSet[i], 1);
-        }
-
+        // draw boxes around tested flasks
         for (let i = 0; i < testedFlasks.length; i++) {
-            let j = i;
-            ctx.strokeStyle = "black"
-            ctx.strokeRect(posn(j).x - 58, posn(j).y - 108, 118, 118);
+            let j = testedFlasks[i].val;
+            // ctx.strokeStyle = "black"
+            ctx.fillStyle = "grey";
+            ctx.fillRect(posn(j).x - 50, posn(j).y - 90, 100, 100);
             if(testedFlasks[i].data.feedback == "CORRECT"){
                 ctx.fillStyle = "green"
             } else {
                 ctx.fillStyle = "red"
             }
-            ctx.fillRect(posn(j).x - 50, posn(j).y - 102, 20, 20)
+            ctx.fillRect(posn(j).x - 41, posn(j).y - 81, 17, 17)
             if(testedFlasks[i].data.reacts){
-                ctx.drawImage(fire, posn(j).x + 30, posn(j).y - 102, 14, 20);
+                ctx.drawImage(fire2, posn(j).x + 25, posn(j).y - 84, 17, 20);
             } 
             
-            drawFlask(posn(j).x, posn(j).y, testedFlasks[i].contents, 1);
         }
 
+
+        for (let i = 0; i < classificationSet.length; i++) {
+            let j = i
+            drawFlask(posn(j).x, posn(j).y, classificationSet[i], 0.8);
+        }
+
+
         ctx.strokeStyle = "blue";
-        ctx.strokeRect(posn(selectedFlask+testedFlasks.length).x - 58, posn(selectedFlask+testedFlasks.length).y - 108, 118, 118); //halo around selected flask;
+        ctx.strokeRect(posn(selectedFlask).x - 50, posn(selectedFlask).y - 90, 100, 100); //halo around selected flask;
 
         ctx.fillStyle = "black";
         ctx.fillText("score: " + score, 420, 110);
 
         if (lastPick != null) {
             if (lastPick.reacts) {
-                ctx.fillText(lastPick.feedback + ". The combination reacts.", 65, 140);
+                ctx.fillText(lastPick.feedback + ". The combination reacts.", 65, 940);
             } else {
-                ctx.fillText(lastPick.feedback + ". The combination does not react.", 40, 140);
+                ctx.fillText(lastPick.feedback + ". The combination does not react.", 40, 940);
             }
         }
 
-        if (classificationSet.length == 0){
+        if (testedFlasks.length >= 16){
             selectedFlask=9999;
             setTimeout(switchState,900,"end");
         } 
@@ -421,73 +432,8 @@ function drawScene() {
         ctx.fillText("You Scored " + score, 140, 400);
         ctx.fillText("Out Of " + maxScore + " Possible Points!", 40, 450);
         // ctx.
+    } 
 
-    // ******************
-    // OUTDATED CODE
-    // ******************
-    } else if (gameState == "01011001") { // outdated code lol
-        // halo around selected card or button
-        ctx.fillStyle = "blue";
-        if (selected > 900) { // selected > 900 means a button is selected.
-            let thisWork; thisWork = selected - 901; // I am losing my mind
-            ctx.fillRect(buttons[thisWork].x - 5, buttons[thisWork].y - 5, buttons[thisWork].width + 10, buttons[thisWork].height + 10);
-        }
-        else if (selected >= 0 && selected < cards.length) { // otherwise, a card is selected. cards.length is largely redundant since there's only one card
-            ctx.fillRect(cards[selected].x - 5 * cards[selected].scale, cards[selected].y - 5 * cards[selected].scale,
-                90 * cards[selected].scale, 130 * cards[selected].scale);
-        }
-
-        // draw the menu elements
-        for (let i = 0; i < buttons.length; i++) {
-            ctx.fillStyle = buttons[i].display.color;
-            ctx.fillRect(buttons[i].x, buttons[i].y, buttons[i].width, buttons[i].height);
-            ctx.font = buttons[i].display.font;
-            ctx.fillStyle = buttons[i].display.textColor;
-            ctx.fillText(buttons[i].display.text,
-                buttons[i].x + buttons[i].display.textX, buttons[i].y + buttons[i].display.textY);
-        }
-
-        // draw the central card
-        for (let i = 0; i < cards.length; i++) { // a loop here is redundant since there's only one card
-            drawCard(cards[i].x, cards[i].y, cards[i].symbols, 1.5);
-        }
-
-        ctx.restore();
-        if (lastPick != null) {
-            if (lastPick.value == 1) {
-                ctx.fillText("Rule MATCHED by Card:", 70, 720);
-                drawCard(420, 680, lastPick.card, 0.5);
-            } else if (lastPick.value == 0) {
-                ctx.fillText("Rule VIOLATED by Card:", 70, 720);
-                drawCard(420, 680, lastPick.card, 0.5);
-            }
-            if (lastPick.truth == 1) {
-                ctx.fillText("You were right! + " + lastPick.score + " points!", 70, 780);
-            } else {
-                ctx.fillText("Sorry, that wasn't right.", 100, 780);
-            }
-        }
-        ctx.font = '36px serif';
-        ctx.fillStyle = "gold";
-        ctx.fillText("Score: " + score, 175, 150);
-        ctx.fillStyle = "black";
-
-
-        // ctx.fillText("Score: " + score, 190, 880);
-        ctx.fillText("Turns taken: " + turns, 140, 900);
-        ctx.font = '24px serif'
-
-    }
-
-    else if (gameState == "game over") { // game over
-        ctx.font = '48px serif'
-        ctx.fillText("Game Over", 120, 400);
-        // ctx.fillText("Score: " + score, 120, 450);
-        // console.log("drawing gameover screen");
-    }
-    // ******************
-    // OUTDATED CODE
-    // ******************
     ctx.restore();
 }
 
@@ -574,6 +520,7 @@ function drawCard(x, y, card, scale) { // actually inputs a card's symbols, not 
 
 
 // draws a flask with bottom middle point at (x,y)
+// dimensions are 100 x 100 at size 1 (probably).
 function drawFlask(x, y, contents, sz) {
     if (contents == null) {
         return;
@@ -816,6 +763,13 @@ function init() {
     console.log(scoringRules);
     console.log(scoringTemplate);
 
+    // let arrMeMatey = [0,1];
+    // arrMeMatey.push(randomInt(0,1));
+    // shuffleArray(arrMeMatey);
+    // for (let i=0; i<arrMeMatey.length; i++){
+    //    let hint = generateHint(arrMeMatey[i]);
+    //    pickHistory.push({card: hint, score: checkCombination(hint)});
+    // }
     let hint = generateHint();
     lastPick = {
         card: hint,
@@ -827,7 +781,7 @@ function init() {
     countdown = 240;
     window.setInterval(() => countdown = Math.max(countdown - 1, 0), 1000);
 
-    newFrame();
+    newFrame(); 
 }
 
 let cards = [];
