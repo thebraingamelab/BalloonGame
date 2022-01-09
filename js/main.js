@@ -279,6 +279,7 @@ function switchState(state) {
 }
 
 function drawButtons() {
+    ctx.save();
     for (let i = 0; i < buttons.length; i++) {
         ctx.fillStyle = buttons[i].display.color;
         ctx.fillRect(buttons[i].x, buttons[i].y, buttons[i].width, buttons[i].height);
@@ -287,10 +288,12 @@ function drawButtons() {
         ctx.fillText(buttons[i].display.text,
             buttons[i].x + buttons[i].display.textX, buttons[i].y + buttons[i].display.textY);
     }
+    ctx.restore();
 }
 
 function drawScene() {
     function drawPickHistory(){
+        ctx.save();
         // Draw the pick history box and text
         ctx.strokeRect(105, 150, 330, 80);
         ctx.font = '24px serif';
@@ -307,7 +310,49 @@ function drawScene() {
                 }
             }
         }
+        ctx.restore();
     }
+
+    function drawClassificationSet(){
+        ctx.save();
+        function posn(i) {
+            return {
+                x: 80 + (125 * (i % 4)),
+                y: 365 + 128 * Math.floor(i / 4)
+            }
+        }
+
+        // draw boxes around tested flasks
+        for (let i = 0; i < testedFlasks.length; i++) {
+            let j = testedFlasks[i].val;
+            // ctx.strokeStyle = "black"
+            ctx.fillStyle = "grey";
+            ctx.fillRect(posn(j).x - 50, posn(j).y - 90, 100, 100);
+            if(testedFlasks[i].data.feedback == "CORRECT"){
+                ctx.fillStyle = "green"
+            } else {
+                ctx.fillStyle = "red"
+            }
+            ctx.fillRect(posn(j).x - 41, posn(j).y - 81, 17, 17)
+            if(testedFlasks[i].data.reacts){
+                ctx.drawImage(fire2, posn(j).x + 25, posn(j).y - 84, 17, 20);
+            } 
+            
+        }
+
+
+        for (let i = 0; i < classificationSet.length; i++) {
+            let j = i
+            drawFlask(posn(j).x, posn(j).y, classificationSet[i], 0.8);
+        }
+
+
+        ctx.strokeStyle = "blue";
+        ctx.strokeRect(posn(selectedFlask).x - 50, posn(selectedFlask).y - 90, 100, 100); //halo around selected flask;
+
+        ctx.restore();
+    }
+
     ctx.clearRect(0, 0, 540, 960); // clear the frame
 
 
@@ -335,6 +380,7 @@ function drawScene() {
         // possibly show/hide left and right arrows. 
 
         // draw the timer
+        ctx.fillStyle = "black";
         let minutes = Math.floor(countdown / 60);
         let seconds = countdown % 60;
         if (seconds < 10) { seconds = "0" + seconds; } // Nothing to see here, move along
@@ -372,45 +418,12 @@ function drawScene() {
         }
 
         drawButtons();
-
         drawPickHistory();
+        drawClassificationSet();
 
-        function posn(i) {
-            return {
-                x: 80 + (125 * (i % 4)),
-                y: 365 + 128 * Math.floor(i / 4)
-            }
-        }
-
-        // draw boxes around tested flasks
-        for (let i = 0; i < testedFlasks.length; i++) {
-            let j = testedFlasks[i].val;
-            // ctx.strokeStyle = "black"
-            ctx.fillStyle = "grey";
-            ctx.fillRect(posn(j).x - 50, posn(j).y - 90, 100, 100);
-            if(testedFlasks[i].data.feedback == "CORRECT"){
-                ctx.fillStyle = "green"
-            } else {
-                ctx.fillStyle = "red"
-            }
-            ctx.fillRect(posn(j).x - 41, posn(j).y - 81, 17, 17)
-            if(testedFlasks[i].data.reacts){
-                ctx.drawImage(fire2, posn(j).x + 25, posn(j).y - 84, 17, 20);
-            } 
-            
-        }
-
-
-        for (let i = 0; i < classificationSet.length; i++) {
-            let j = i
-            drawFlask(posn(j).x, posn(j).y, classificationSet[i], 0.8);
-        }
-
-
-        ctx.strokeStyle = "blue";
-        ctx.strokeRect(posn(selectedFlask).x - 50, posn(selectedFlask).y - 90, 100, 100); //halo around selected flask;
-
+        ctx.font = '24px serif';
         ctx.fillStyle = "black";
+
         ctx.fillText("score: " + score, 420, 110);
 
         if (lastPick != null) {
@@ -422,15 +435,16 @@ function drawScene() {
         }
 
         if (testedFlasks.length >= 16){
-            selectedFlask=9999;
-            setTimeout(switchState,900,"end");
+            switchState("end")
         } 
 
     } else if(gameState == "end") {
+        drawClassificationSet();
+        selectedFlask = 9999;
         ctx.fillStyle = "Black"
-        ctx.font = "32pt serif"
-        ctx.fillText("You Scored " + score, 140, 400);
-        ctx.fillText("Out Of " + maxScore + " Possible Points!", 40, 450);
+        ctx.font = "26pt serif"
+        ctx.fillText("You Scored " + score, 140, 150);
+        ctx.fillText("Out Of " + maxScore + " Possible Points!", 40, 200);
         // ctx.
     } 
 
@@ -779,7 +793,12 @@ function init() {
     cards[0].symbols = hint.symbols;
 
     countdown = 240;
-    window.setInterval(() => countdown = Math.max(countdown - 1, 0), 1000);
+    function epicGaming(){
+        if(!template.isPaused()){
+            countdown = Math.max(countdown - 1, 0);
+        }    
+    }
+    window.setInterval(epicGaming, 1000);
 
     newFrame(); 
 }

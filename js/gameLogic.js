@@ -44,6 +44,35 @@ let logic = { // "config" variables used in backround rng
     oldSelected: 0
 }
 
+function hexToColor(hex){
+    switch(hex){
+        case "#0e9ef5":
+            return "blue";
+            break;
+        case "#ae1212":
+            return "red";
+            break;
+        case "#ce82e3":
+            return "purple";
+            break;
+        case "#6df50e":
+            return "green";
+            break;
+        case "#ffe220":
+            return "yellow";
+            break;
+        case "#e48a2a":
+            return "orange";
+            break;
+        default:
+            console.log("ERROR: " + hex + " is not a valid color (note: this function only works for the 6 colors of liquid, not any hex value)");
+            return "grey";
+            break;
+        
+
+    }
+}
+
 function explainRules() {
 
 }
@@ -66,7 +95,7 @@ function createCard() { // a card is a list of symbols
 }
 
 function createScoringRule() {
-    let ruleTemplates = ["atLeastN", "exactlyN", "combination"];
+    let ruleTemplates = ["atLeastN",  "exactlyN", "combination"];
     let atomicRules = [];
     for (let i = 0; i < 2; i++) {
         shuffleArray(ruleTemplates);
